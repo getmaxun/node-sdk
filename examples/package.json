@@ -1,0 +1,23 @@
+{
+  "name": "maxun-sdk-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Examples for using Maxun SDKs",
+  "scripts": {
+    "extract:basic": "tsx extract-basic.ts",
+    "extract:list": "tsx extract-list.ts",
+    "extract:bulk": "tsx extract-bulk.ts",
+    "scrape:auto": "tsx scrape-auto.ts",
+    "scheduled": "tsx scheduled.ts",
+    "integrations": "tsx integrations.ts"
+  },
+  "dependencies": {
+    "@maxun/extract": "^0.1.0",
+    "@maxun/scrape": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
