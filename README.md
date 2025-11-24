@@ -4,8 +4,8 @@ Official SDKs for programmatic web data extraction with Maxun.
 
 ## Packages
 
-- **[@maxun/extract](#maxunextract)** - Structured data extraction with precise field selection
-- **[@maxun/scrape](#maxunscrape)** - Automatic web scraping with intelligent detection
+- **[@maxun/extract](#maxunextract)** - Structured data extraction with workflows, form filling, and precise field selection
+- **[@maxun/scrape](#maxunscrape)** - Simple page scraping - just URL and format (markdown/HTML)
 - **[@maxun/core](#maxuncore)** - Core utilities (internal use)
 
 ## Installation
@@ -22,6 +22,19 @@ npm install @maxun/extract @maxun/scrape
 ```
 
 ## Quick Start
+
+### When to use which SDK?
+
+- **Use Extract SDK** when you need:
+  - Structured data extraction with specific fields
+  - Form filling and interactions (clicks, typing, navigation)
+  - Multi-step workflows with conditional logic
+  - Screenshots at specific points
+
+- **Use Scrape SDK** when you need:
+  - Quick, simple page scraping
+  - Entire page content in markdown or HTML format
+  - No interactions required - just URL and format
 
 ### Extract SDK
 
@@ -52,7 +65,7 @@ console.log(result.data.textData);
 
 ### Scrape SDK
 
-Automatically detect and scrape data:
+Automatically scrape entire pages in markdown or HTML format:
 
 ```typescript
 import { MaxunScrape } from '@maxun/scrape';
@@ -61,17 +74,16 @@ const scraper = new MaxunScrape({
   apiKey: process.env.MAXUN_API_KEY
 });
 
-// Create a scraping robot
+// Create a scraping robot - just URL and format!
 const robot = await scraper
-  .create('Product List Scraper')
-  .navigate('https://example.com/products')
-  .autoDetect()
-  .asMarkdown()
+  .create('Wikipedia Scraper')
+  .url('https://en.wikipedia.org/wiki/Web_scraping')
+  .asMarkdown()  // Can also use .asHTML() or both
   .build();
 
 // Execute and get results
 const result = await robot.run();
-console.log(result.data.listData);
+console.log(result.data);
 ```
 
 ## Getting Your API Key
@@ -143,12 +155,13 @@ const robot = await extractor
   .build();
 ```
 
-#### Advanced Workflow
+#### Advanced Workflow with Form Filling
 
 ```typescript
 const robot = await extractor
   .create('Advanced Extractor')
   .navigate('https://example.com/login')
+  // Input types are automatically detected!
   .type('#email', 'user@example.com')
   .type('#password', 'password')
   .click('button[type="submit"]')
@@ -162,52 +175,54 @@ const robot = await extractor
   .build();
 ```
 
+**Key features:**
+- Input types (text, number, email, password, date, etc.) are automatically detected
+- Values are securely encrypted during storage
+- `waitForLoadState` is automatically added after type actions for stability
+
 ### @maxun/scrape
 
-#### Auto-Detection
+The Scrape SDK provides the simplest possible API for page scraping - just specify a URL and output format.
+
+#### Basic Page Scraping
 
 ```typescript
+// Scrape as Markdown
 const robot = await scraper
-  .create('Auto Scraper')
-  .navigate('https://example.com/products')
-  .autoDetect()
+  .create('Article Scraper')
+  .url('https://example.com/article')
+  .asMarkdown()
   .build();
 ```
 
-#### Manual List Scraping with Auto-Detect Fields
+#### Multiple Output Formats
 
 ```typescript
+// Get both Markdown and HTML
 const robot = await scraper
-  .create('Product Scraper')
-  .navigate('https://example.com/products')
-  .scrapeList({
-    selector: '.product-card',
-    autoDetectFields: true
-  })
-  .build();
-```
-
-#### Manual List Scraping with Defined Fields
-
-```typescript
-const robot = await scraper
-  .create('Custom Scraper')
-  .navigate('https://example.com/items')
-  .scrapeList({
-    selector: '.item',
-    fields: {
-      title: '.item-title',
-      description: '.item-desc'
-    },
-    pagination: {
-      next: '.next-page',
-      maxPages: 3
-    }
-  })
+  .create('Multi-Format Scraper')
+  .url('https://example.com/page')
   .asMarkdown()
   .asHTML()
   .build();
 ```
+
+#### HTML Only
+
+```typescript
+// Scrape as HTML
+const robot = await scraper
+  .create('HTML Scraper')
+  .url('https://example.com/page')
+  .asHTML()
+  .build();
+```
+
+**Key features:**
+- No workflow needed - just URL and format
+- Automatically scrapes entire page content
+- Supports markdown and HTML output formats
+- Can request multiple formats simultaneously
 
 ### Common Operations
 
@@ -297,12 +312,10 @@ await robot.refresh();
 
 See the [examples](./examples) directory for complete working examples:
 
-- [Basic Extraction](./examples/extract-basic.ts)
-- [List Extraction](./examples/extract-list.ts)
-- [Bulk Extraction](./examples/extract-bulk.ts)
-- [Auto Scraping](./examples/scrape-auto.ts)
-- [Scheduled Extraction](./examples/scheduled.ts)
-- [With Integrations](./examples/integrations.ts)
+- [Basic Extraction](./examples/basic-extraction.ts) - Simple field extraction
+- [Form Fill & Screenshot](./examples/form-fill-screenshot.ts) - Form filling with automatic input type detection
+- [Chained Extraction](./examples/chained-extract.ts) - Multi-page workflows
+- [Simple Scraping](./examples/simple-scrape.ts) - Basic page scraping with format selection
 
 ## API Reference
 

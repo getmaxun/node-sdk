@@ -17,6 +17,7 @@ export interface RobotMeta {
   id: string;
   robotType?: RobotType;
   mode?: RobotMode;
+  url?: string;
   deepExtraction?: boolean;
   extractUrlsFromRuns?: boolean;
   formats?: Format[];
