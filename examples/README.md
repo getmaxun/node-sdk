@@ -28,61 +28,91 @@ This folder contains examples demonstrating how to use the Maxun SDKs.
 ### 1. Basic Extraction
 Extracts structured data from a single page:
 ```bash
-npx tsx examples/01-basic-extraction.ts
+npx tsx examples/basic-extraction.ts
 ```
 
 **What it does:**
-- Creates a robot to extract product details (title, price, availability)
+- Creates a robot to extract specific fields using CSS selectors
 - Executes the robot
 - Displays the extracted data
-- Cleans up by deleting the robot
 
-### 2. List Extraction
-Extracts multiple items with pagination:
+### 2. Form Fill & Screenshot
+Demonstrates form filling with automatic input type detection:
 ```bash
-npx tsx examples/02-list-extraction.ts
+npx tsx examples/form-fill-screenshot.ts
 ```
 
 **What it does:**
-- Creates a robot to extract a list of books
-- Handles pagination to get multiple pages
-- Limits to 20 items across 3 pages
-- Shows the run history
-- Cleans up
+- Navigates to a form page
+- Fills various input fields (text, number, password, date)
+- **Automatically detects input types** - no need to specify them manually
+- Values are securely encrypted during storage
+- Takes full-page and viewport screenshots
+- Demonstrates `waitForLoadState` is automatically added after type actions
 
-### 3. Robot Reuse
-Create once, execute multiple times:
+### 3. Chained Extraction
+Multi-page workflows with navigation:
 ```bash
-npx tsx examples/03-robot-reuse.ts
+npx tsx examples/chained-extract.ts
 ```
 
 **What it does:**
-- Creates a robot once
-- Executes it 3 times to monitor price changes
-- Views all run history
-- Cleans up
+- Demonstrates complex workflows with multiple navigation steps
+- Shows how to chain actions together
+- Extracts data from different pages in sequence
+
+### 4. Simple Scraping
+The simplest possible page scraping - just URL and format:
+```bash
+npx tsx examples/simple-scrape.ts
+```
+
+**What it does:**
+- Creates a scrape robot with just a URL
+- Specifies output format(s): `.asMarkdown()` and/or `.asHTML()`
+- **No workflow needed** - metadata-only robot
+- Automatically scrapes entire page content
 
 ## Example Output
 
-Successful execution looks like:
+### Extract SDK Output
 ```
-=== Basic Extraction Example ===
+=== Form Fill and Screenshot Example ===
 
-Creating robot...
-✓ Robot created: abc-123-def-456
+✓ Robot created: robot_1234567890_abc123
 
-Executing robot...
-✓ Execution completed!
+Robot workflow:
+  1. Navigate to contact form
+  2-7. Type into various input fields (types auto-detected)
+  8. Take full-page screenshot
+  9. Scroll down
+  10. Take viewport screenshot
+  11. Extract form values
+
+✓ Robot created successfully
+
+Note: Input types (text, number, date, etc.) are automatically
+detected during robot creation - no need to specify them!
+
+Executing robot to verify inputs...
+✓ Robot execution completed!
+```
+
+### Scrape SDK Output
+```
+=== Simple Scraping Example ===
+
+Creating scraper...
+✓ Robot created: robot_1234567890_xyz789
+
+Executing scraper...
+✓ Scraping completed!
 
 Results:
 {
-  "title": "A Light in the Attic",
-  "price": "£51.77",
-  "availability": "In stock"
+  "markdown": "# Page Title\n\n...",
+  "html": "<html>...</html>"
 }
-
-Cleaning up...
-✓ Robot deleted
 ```
 
 ## Troubleshooting
@@ -105,13 +135,28 @@ Check the backend logs for detailed error information:
 npm run dev
 ```
 
+## Key Features Demonstrated
+
+### Extract SDK
+- **Automatic input type detection**: No need to specify field types (text, number, email, password, date, etc.)
+- **Secure encryption**: Values are automatically encrypted during storage
+- **Automatic stability**: `waitForLoadState` is inserted after type actions
+- **Workflow building**: Chain multiple actions together (navigate, type, click, extract, screenshot)
+
+### Scrape SDK
+- **Simplest API**: Just URL and format - no workflow needed
+- **Multiple formats**: Get markdown, HTML, or both
+- **Metadata-only**: Creates robots without workflow arrays
+- **Quick scraping**: Perfect for simple page content extraction
+
 ## Next Steps
 
 After running these examples, you can:
 1. Modify the selectors to extract different data
 2. Try different websites
-3. Experiment with pagination settings
-4. Add scheduling or webhooks (see SDK documentation)
+3. Experiment with form filling and screenshots (Extract SDK)
+4. Try different output formats (Scrape SDK)
+5. Add scheduling or webhooks (see SDK documentation)
 
 ## Getting Your API Key
 

@@ -36,8 +36,12 @@ console.log(result.data.textData);
 ## Features
 
 - Precise field extraction with CSS selectors
+- Form filling with automatic input type detection (text, number, email, password, date, etc.)
+- Secure value encryption for sensitive data
+- Automatic `waitForLoadState` insertion for stability
 - List extraction with pagination support
 - Bulk extraction from multiple URLs
+- Screenshots with customizable options
 - Scheduling and webhooks
 - Integration with Google Sheets, Airtable, N8N
 - Full TypeScript support
