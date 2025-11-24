@@ -78,11 +78,16 @@ export abstract class WorkflowBuilder {
 
   /**
    * Type text into an input
+   * The input type will be automatically detected during validation if not provided
    */
-  type(selector: string, text: string): this {
+  type(selector: string, text: string, inputType?: string): this {
+    const args = inputType
+      ? [selector, text, inputType]  // User specified type
+      : [selector, text];             // Will be auto-detected by enricher
+
     this.addAction({
-      action: 'fill',
-      args: [selector, text],
+      action: 'type',
+      args: args,
     });
     return this;
   }
@@ -112,10 +117,36 @@ export abstract class WorkflowBuilder {
   /**
    * Take a screenshot
    */
-  screenshot(name?: string): this {
+  screenshot(name?: string, options?: {
+    fullPage?: boolean;
+    type?: 'png' | 'jpeg';
+    quality?: number;
+    timeout?: number;
+    caret?: 'hide' | 'initial';
+    scale?: 'css' | 'device';
+    animations?: 'disabled' | 'allow';
+  }): this {
+    const screenshotArgs = options ? {
+      type: options.type || 'png',
+      caret: options.caret || 'hide',
+      scale: options.scale || 'device',
+      timeout: options.timeout || 30000,
+      fullPage: options.fullPage !== undefined ? options.fullPage : true,
+      animations: options.animations || 'allow',
+      ...(options.quality && { quality: options.quality })
+    } : {
+      type: 'png',
+      caret: 'hide',
+      scale: 'device',
+      timeout: 30000,
+      fullPage: true,
+      animations: 'allow'
+    };
+
     this.addAction({
       action: 'screenshot',
-      name: name || `screenshot_${Date.now()}`,
+      name: name,
+      args: [screenshotArgs]
     });
     return this;
   }
@@ -177,6 +208,7 @@ export abstract class WorkflowBuilder {
 
   /**
    * Add an action to the current step
+   * Actions are added to the end since what[] executes top-to-bottom
    */
   protected addAction(action: What): void {
     if (!this.currentStep) {
@@ -186,6 +218,7 @@ export abstract class WorkflowBuilder {
         what: [action],
       });
     } else {
+      // Use push to add to end - top-to-bottom execution
       this.currentStep.what.push(action);
     }
   }
