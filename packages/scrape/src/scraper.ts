@@ -25,7 +25,6 @@ export class MaxunScrape {
    * Build and save the robot to Maxun
    */
   async build(builder: ScrapeBuilder): Promise<Robot> {
-    const workflow = builder.getWorkflowArray();
     const meta = builder.getMeta();
 
     // Generate a unique ID for the robot
@@ -34,7 +33,7 @@ export class MaxunScrape {
 
     const workflowFile: WorkflowFile = {
       meta: meta as any,
-      workflow,
+      workflow: [],
     };
 
     // Create the robot

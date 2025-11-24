@@ -1,16 +1,18 @@
 /**
- * Scrape Workflow Builder
- * Fluent API for building scraping workflows
+ * Scrape Builder
+ * Simple fluent API for building scraping robots (no workflow needed)
  */
 
-import { WorkflowBuilder, Robot } from '@maxun/core';
-import { ScrapeListConfig } from './types';
+import { Robot, Format, RobotMeta } from '@maxun/core';
 
-export class ScrapeBuilder extends WorkflowBuilder {
+export class ScrapeBuilder {
   private scraper: any; // Will be set by MaxunScrape
+  private name: string;
+  private targetUrl?: string;
+  private formats: Format[] = [];
 
   constructor(name: string) {
-    super(name, 'scrape');
+    this.name = name;
   }
 
   /**
@@ -22,75 +24,10 @@ export class ScrapeBuilder extends WorkflowBuilder {
   }
 
   /**
-   * Build and create the robot
+   * Set the URL to scrape
    */
-  async build(): Promise<Robot> {
-    if (!this.scraper) {
-      throw new Error('Builder not properly initialized. Use scraper.create() to create a builder.');
-    }
-    return await this.scraper.build(this);
-  }
-
-  /**
-   * Automatically detect and scrape lists on the page
-   */
-  autoDetect(): this {
-    this.addAction({
-      action: 'scrapeListAuto',
-      args: [],
-      name: 'auto_detect_scrape',
-    });
-
-    return this;
-  }
-
-  /**
-   * Scrape a list with optional auto-detection of fields
-   */
-  scrapeList(config: ScrapeListConfig): this {
-    const { selector, autoDetectFields, fields, pagination } = config;
-
-    if (autoDetectFields) {
-      // Use scrapeListAuto with a specific container selector
-      this.addAction({
-        action: 'scrapeListAuto',
-        args: [{ containerSelector: selector }],
-        name: 'auto_detect_list',
-      });
-    } else if (fields) {
-      // Manual field configuration
-      const fieldSelectors: Record<string, any> = {};
-      for (const [fieldName, fieldSelector] of Object.entries(fields)) {
-        fieldSelectors[fieldName] = {
-          _$: fieldSelector,
-        };
-      }
-
-      const scrapeListConfig: any = {
-        listSelector: selector,
-        fields: fieldSelectors,
-      };
-
-      // Add pagination if configured
-      if (pagination) {
-        scrapeListConfig.pagination = {
-          nextButtonSelector: pagination.next,
-          maxPages: pagination.maxPages || 10,
-          waitAfterClick: pagination.waitAfterClick || 2000,
-        };
-      }
-
-      this.addAction({
-        action: 'scrapeList',
-        args: [scrapeListConfig],
-        name: 'scrape_list',
-      });
-    } else {
-      throw new Error(
-        'Either autoDetectFields must be true or fields must be provided'
-      );
-    }
-
+  url(url: string): this {
+    this.targetUrl = url;
     return this;
   }
 
@@ -98,9 +35,8 @@ export class ScrapeBuilder extends WorkflowBuilder {
    * Scrape content as markdown
    */
   asMarkdown(): this {
-    const currentFormats = this.meta.formats || [];
-    if (!currentFormats.includes('markdown')) {
-      this.meta.formats = [...currentFormats, 'markdown'];
+    if (!this.formats.includes('markdown')) {
+      this.formats.push('markdown');
     }
     return this;
   }
@@ -109,10 +45,36 @@ export class ScrapeBuilder extends WorkflowBuilder {
    * Scrape content as HTML
    */
   asHTML(): this {
-    const currentFormats = this.meta.formats || [];
-    if (!currentFormats.includes('html')) {
-      this.meta.formats = [...currentFormats, 'html'];
+    if (!this.formats.includes('html')) {
+      this.formats.push('html');
     }
     return this;
+  }
+
+  /**
+   * Get metadata for the scrape robot
+   */
+  getMeta(): Partial<RobotMeta> {
+    return {
+      name: this.name,
+      robotType: 'scrape',
+      url: this.targetUrl,
+      formats: this.formats.length > 0 ? this.formats : ['markdown'],
+    };
+  }
+
+  /**
+   * Build and create the robot
+   */
+  async build(): Promise<Robot> {
+    if (!this.scraper) {
+      throw new Error('Builder not properly initialized. Use scraper.create() to create a builder.');
+    }
+
+    if (!this.targetUrl) {
+      throw new Error('URL is required. Call .url() before building.');
+    }
+
+    return await this.scraper.build(this);
   }
 }
