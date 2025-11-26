@@ -1,5 +1,5 @@
 /**
- * Example showing chained extract and extractList actions
+ * Example showing chained captureText and captureList actions
  * Demonstrates both single field extraction and list extraction with custom names
  */
 
@@ -14,19 +14,19 @@ async function chainedExtractExample() {
   });
 
   try {
-    // Create a robot that extracts page info AND a list of books
+    // Create a robot that captures page info AND a list of books
     const robot = await extractor
       .create('Books Scraper')
       .navigate('https://books.toscrape.com/')
 
-      // Extract single page-level information
-      .extract({
+      // Capture single page-level information
+      .captureText({
         siteName: '.col-sm-8 h1',
         totalBooks: '.form-horizontal'
       }, 'Page Information')
 
-      // Extract list of books
-      .extractList({
+      // Capture list of books
+      .captureList({
         selector: '.product_pod',
         fields: {
           title: 'h3 a',
@@ -36,9 +36,7 @@ async function chainedExtractExample() {
           imageUrl: '.image_container img'
         },
         maxItems: 20
-      }, 'Books List')
-
-      .build();
+      }, 'Books List');
 
     console.log('✓ Robot created:', robot.id);
     console.log('\nRobot has 2 capture actions:');

@@ -14,14 +14,15 @@ async function simpleScrape() {
   });
 
   try {
-    // Create a simple scraper - just URL and format!
+    // Create a simple scraper - just URL and formats!
     console.log('Creating scraper...');
-    const robot = await scraper
-      .create('Wikipedia Scraper Both')
-      .url('https://en.wikipedia.org/wiki/Web_scraping')
-      .asMarkdown()  // Can also use .asHTML() or both
-      .asHTML()
-      .build();
+    const robot = await scraper.create(
+      'Wikipedia Scraper Both',
+      'https://en.wikipedia.org/wiki/Web_scraping',
+      {
+        formats: ['markdown', 'html']  // Can specify one or both
+      }
+    );
 
     console.log(`✓ Robot created: ${robot.id}\n`);
 

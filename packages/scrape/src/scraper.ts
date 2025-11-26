@@ -2,8 +2,11 @@
  * MaxunScrape - Main class for the Scrape SDK
  */
 
-import { MaxunClient, MaxunConfig, Robot, WorkflowFile } from '@maxun/core';
-import { ScrapeBuilder } from './scrape-builder';
+import { MaxunClient, MaxunConfig, Robot, WorkflowFile, Format } from '@maxun/core';
+
+export interface ScrapeOptions {
+  formats?: Format[];
+}
 
 export class MaxunScrape {
   private client: MaxunClient;
@@ -13,26 +16,28 @@ export class MaxunScrape {
   }
 
   /**
-   * Create a new scraping workflow
+   * Create a new scraping robot
+   * @param name - Name of the scraping robot
+   * @param url - URL to scrape
+   * @param options - Optional scraping options (formats)
+   * @returns Promise<Robot>
    */
-  create(name: string): ScrapeBuilder {
-    const builder = new ScrapeBuilder(name);
-    builder.setScraper(this);
-    return builder;
-  }
-
-  /**
-   * Build and save the robot to Maxun
-   */
-  async build(builder: ScrapeBuilder): Promise<Robot> {
-    const meta = builder.getMeta();
+  async create(name: string, url: string, options?: ScrapeOptions): Promise<Robot> {
+    if (!url) {
+      throw new Error('URL is required');
+    }
 
     // Generate a unique ID for the robot
     const robotId = `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    meta.id = robotId;
 
     const workflowFile: WorkflowFile = {
-      meta: meta as any,
+      meta: {
+        name,
+        id: robotId,
+        robotType: 'scrape',
+        url,
+        formats: options?.formats || ['markdown'],
+      } as any,
       workflow: [],
     };
 

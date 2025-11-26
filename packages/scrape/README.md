@@ -17,12 +17,14 @@ const scraper = new MaxunScrape({
   apiKey: process.env.MAXUN_API_KEY
 });
 
-// Create a scraping robot - just URL and format!
-const robot = await scraper
-  .create('Wikipedia Scraper')
-  .url('https://en.wikipedia.org/wiki/Web_scraping')
-  .asMarkdown()  // Can also use .asHTML() or both
-  .build();
+// Create a scraping robot - just URL and formats!
+const robot = await scraper.create(
+  'Wikipedia Scraper',
+  'https://en.wikipedia.org/wiki/Web_scraping',
+  {
+    formats: ['markdown', 'html']  // Optional, defaults to ['markdown']
+  }
+);
 
 // Execute and get results
 const result = await robot.run();

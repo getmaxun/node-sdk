@@ -21,12 +21,11 @@ const extractor = new MaxunExtract({
 const robot = await extractor
   .create('Product Extractor')
   .navigate('https://example.com/product')
-  .extract({
+  .captureText({
     title: '.product-title',
     price: '.price',
     description: '.description'
-  })
-  .build();
+  });
 
 // Execute and get results
 const result = await robot.run();

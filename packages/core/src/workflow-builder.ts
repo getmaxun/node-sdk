@@ -115,9 +115,9 @@ export abstract class WorkflowBuilder {
   }
 
   /**
-   * Take a screenshot
+   * Capture a screenshot
    */
-  screenshot(name?: string, options?: {
+  captureScreenshot(name?: string, options?: {
     fullPage?: boolean;
     type?: 'png' | 'jpeg';
     quality?: number;

@@ -51,12 +51,11 @@ const extractor = new MaxunExtract({
 const robot = await extractor
   .create('Product Extractor')
   .navigate('https://example.com/product')
-  .extract({
+  .captureText({
     title: '.product-title',
     price: '.price',
     description: '.description'
-  })
-  .build();
+  });
 
 // Execute and get results
 const result = await robot.run();
@@ -74,12 +73,14 @@ const scraper = new MaxunScrape({
   apiKey: process.env.MAXUN_API_KEY
 });
 
-// Create a scraping robot - just URL and format!
-const robot = await scraper
-  .create('Wikipedia Scraper')
-  .url('https://en.wikipedia.org/wiki/Web_scraping')
-  .asMarkdown()  // Can also use .asHTML() or both
-  .build();
+// Create a scraping robot - just URL and formats!
+const robot = await scraper.create(
+  'Wikipedia Scraper',
+  'https://en.wikipedia.org/wiki/Web_scraping',
+  {
+    formats: ['markdown', 'html']
+  }
+);
 
 // Execute and get results
 const result = await robot.run();
@@ -103,13 +104,12 @@ console.log(result.data);
 const robot = await extractor
   .create('Blog Post Extractor')
   .navigate('https://blog.example.com/post/123')
-  .extract({
+  .captureText({
     title: 'h1.post-title',
     author: '.author-name',
     publishDate: 'time.publish-date',
     content: '.post-content'
-  })
-  .build();
+  });
 ```
 
 #### List Extraction with Pagination
@@ -118,7 +118,7 @@ const robot = await extractor
 const robot = await extractor
   .create('Product List Extractor')
   .navigate('https://example.com/products')
-  .extractList({
+  .captureList({
     selector: '.product-item',
     fields: {
       name: '.product-name',
@@ -130,8 +130,7 @@ const robot = await extractor
       maxPages: 5,
       waitAfterClick: 2000
     }
-  })
-  .build();
+  });
 ```
 
 #### Bulk Extraction from Multiple URLs
@@ -148,11 +147,10 @@ const robot = await extractor
     ]
   })
   .navigate('https://example.com/product/1') // First URL
-  .extract({
+  .captureText({
     title: '.title',
     price: '.price'
-  })
-  .build();
+  });
 ```
 
 #### Advanced Workflow with Form Filling
@@ -167,12 +165,11 @@ const robot = await extractor
   .click('button[type="submit"]')
   .waitFor('.dashboard', 5000)
   .navigate('https://example.com/data')
-  .extract({
+  .captureText({
     userName: '.user-name',
     balance: '.account-balance'
   })
-  .screenshot('dashboard')
-  .build();
+  .captureScreenshot('dashboard');
 ```
 
 **Key features:**
@@ -187,35 +184,38 @@ The Scrape SDK provides the simplest possible API for page scraping - just speci
 #### Basic Page Scraping
 
 ```typescript
-// Scrape as Markdown
-const robot = await scraper
-  .create('Article Scraper')
-  .url('https://example.com/article')
-  .asMarkdown()
-  .build();
+// Scrape as Markdown (default)
+const robot = await scraper.create(
+  'Article Scraper',
+  'https://example.com/article'
+);
+// Formats defaults to ['markdown'] if not specified
 ```
 
 #### Multiple Output Formats
 
 ```typescript
 // Get both Markdown and HTML
-const robot = await scraper
-  .create('Multi-Format Scraper')
-  .url('https://example.com/page')
-  .asMarkdown()
-  .asHTML()
-  .build();
+const robot = await scraper.create(
+  'Multi-Format Scraper',
+  'https://example.com/page',
+  {
+    formats: ['markdown', 'html']
+  }
+);
 ```
 
 #### HTML Only
 
 ```typescript
-// Scrape as HTML
-const robot = await scraper
-  .create('HTML Scraper')
-  .url('https://example.com/page')
-  .asHTML()
-  .build();
+// Scrape as HTML only
+const robot = await scraper.create(
+  'HTML Scraper',
+  'https://example.com/page',
+  {
+    formats: ['html']
+  }
+);
 ```
 
 **Key features:**

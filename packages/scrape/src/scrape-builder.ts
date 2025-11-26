@@ -5,7 +5,7 @@
 
 import { Robot, Format, RobotMeta } from '@maxun/core';
 
-export class ScrapeBuilder {
+export class ScrapeBuilder implements PromiseLike<Robot> {
   private scraper: any; // Will be set by MaxunScrape
   private name: string;
   private targetUrl?: string;
@@ -21,6 +21,28 @@ export class ScrapeBuilder {
   setScraper(scraper: any): this {
     this.scraper = scraper;
     return this;
+  }
+
+  /**
+   * Make the builder awaitable - implements PromiseLike<Robot>
+   */
+  then<TResult1 = Robot, TResult2 = never>(
+    onfulfilled?: ((value: Robot) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
+    if (!this.scraper) {
+      return Promise.reject(
+        new Error('Builder not properly initialized. Use scraper.create() to create a builder.')
+      ).then(onfulfilled, onrejected);
+    }
+
+    if (!this.targetUrl) {
+      return Promise.reject(
+        new Error('URL is required. Call .url() before awaiting.')
+      ).then(onfulfilled, onrejected);
+    }
+
+    return this.scraper.build(this).then(onfulfilled, onrejected);
   }
 
   /**
@@ -61,20 +83,5 @@ export class ScrapeBuilder {
       url: this.targetUrl,
       formats: this.formats.length > 0 ? this.formats : ['markdown'],
     };
-  }
-
-  /**
-   * Build and create the robot
-   */
-  async build(): Promise<Robot> {
-    if (!this.scraper) {
-      throw new Error('Builder not properly initialized. Use scraper.create() to create a builder.');
-    }
-
-    if (!this.targetUrl) {
-      throw new Error('URL is required. Call .url() before building.');
-    }
-
-    return await this.scraper.build(this);
   }
 }

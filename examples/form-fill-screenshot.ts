@@ -27,7 +27,7 @@ async function formFillAndScreenshot() {
       .type('#input-password', 'This is a password')
       .type('#input-date', '20-05-1990')
 
-      .screenshot('Full Page Screenshot', {
+      .captureScreenshot('Full Page Screenshot', {
         fullPage: true,
         type: 'png',
         caret: 'hide',
@@ -40,14 +40,12 @@ async function formFillAndScreenshot() {
       .scroll('down', 500)
 
       // Take a visible viewport screenshot
-      .screenshot('Viewport Screenshot', {
+      .captureScreenshot('Viewport Screenshot', {
         fullPage: false,
         type: 'png',
         caret: 'hide',
         scale: 'device'
-      })
-
-      .build();
+      });
 
     console.log('✓ Robot created:', robot.id);
     console.log('\nRobot workflow:');

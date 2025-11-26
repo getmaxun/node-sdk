@@ -20,13 +20,12 @@ async function basicExtraction() {
     const robot = await extractor
       .create('Product Details Extractor')
       .navigate('https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html')
-      .extract({
+      .captureText({
         title: 'h1',
         price: '.price_color',
         availability: '.availability',
         description: '#product_description + p'
-      })
-      .build();
+      });
 
     console.log(`✓ Robot created: ${robot.id}\n`);
 
