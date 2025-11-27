@@ -6,7 +6,6 @@ import { Format } from '@maxun/core';
 
 export interface ScrapeListConfig {
   selector: string; // Container selector for list items
-  autoDetectFields?: boolean; // Automatically detect fields within items
   fields?: { [fieldName: string]: string }; // Manual field definitions
   pagination?: ScrapePaginationConfig;
 }
