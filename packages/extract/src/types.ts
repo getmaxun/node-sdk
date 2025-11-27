@@ -8,10 +8,9 @@ export interface ExtractFields {
 
 export interface ExtractListConfig {
   selector: string; // Container selector for list items
-  fields: ExtractFields; // Fields to extract from each item
+  // Fields are auto-generated based on the selector - no manual field definition needed
   pagination?: PaginationConfig;
   maxItems?: number; // Maximum number of items to extract
-  fallbackSelectors?: { [fieldName: string]: string[] };
 }
 
 export interface PaginationConfig {
