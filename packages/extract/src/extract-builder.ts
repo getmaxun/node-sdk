@@ -53,14 +53,13 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
 
   /**
    * Capture a list of items with pagination support
+   * Fields are automatically detected from the list selector
    */
   captureList(config: ExtractListConfig, name?: string): this {
-    const { selector, fields, pagination } = config;
+    const { selector, pagination } = config;
 
-    // Build scrapeList configuration with plain field selectors
     const scrapeListConfig: any = {
       itemSelector: selector,
-      fields: fields,
       maxItems: config.maxItems || 100
     };
 
