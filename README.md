@@ -119,12 +119,7 @@ const robot = await extractor
   .create('Product List Extractor')
   .navigate('https://example.com/products')
   .captureList({
-    selector: '.product-item',
-    fields: {
-      name: '.product-name',
-      price: '.product-price',
-      rating: '.product-rating'
-    },
+    selector: '.product-item',  // Fields are auto-detected from list items!
     pagination: {
       next: '.pagination-next',
       maxPages: 5,
@@ -132,6 +127,8 @@ const robot = await extractor
     }
   });
 ```
+
+**Key feature:** Fields are automatically detected from the list selector - no need to manually specify field selectors!
 
 #### Bulk Extraction from Multiple URLs
 
