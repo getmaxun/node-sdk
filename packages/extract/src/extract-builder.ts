@@ -63,12 +63,10 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
       maxItems: config.maxItems || 100
     };
 
-    // Add pagination if configured
     if (pagination) {
       scrapeListConfig.pagination = {
-        nextButtonSelector: pagination.next,
-        maxPages: pagination.maxPages || 10,
-        waitAfterClick: pagination.waitAfterClick || 2000,
+        type: pagination.type,
+        selector: pagination.selector || null
       };
     }
 

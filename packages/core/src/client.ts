@@ -257,4 +257,38 @@ export class MaxunClient {
     }
     return response.data.data;
   }
+
+  /**
+   * LLM-based extraction - extract data using natural language prompt
+   */
+  async extractWithLLM(url: string, options: {
+    prompt: string;
+    llmProvider?: 'anthropic' | 'openai' | 'ollama';
+    llmModel?: string;
+    llmApiKey?: string;
+    llmBaseUrl?: string;
+    robotName?: string;
+  }): Promise<any> {
+    const response = await this.axios.post<ApiResponse<any>>(
+      '/extract/llm',
+      {
+        url,
+        prompt: options.prompt,
+        llmProvider: options.llmProvider,
+        llmModel: options.llmModel,
+        llmApiKey: options.llmApiKey,
+        llmBaseUrl: options.llmBaseUrl,
+        robotName: options.robotName,
+      },
+      {
+        timeout: 300000,
+      }
+    );
+
+    if (!response.data.data) {
+      throw new MaxunError('Failed to extract data with LLM');
+    }
+
+    return response.data.data;
+  }
 }

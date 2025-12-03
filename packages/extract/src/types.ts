@@ -3,20 +3,18 @@
  */
 
 export interface ExtractFields {
-  [fieldName: string]: string; // fieldName: cssSelector
+  [fieldName: string]: string;
 }
 
 export interface ExtractListConfig {
-  selector: string; // Container selector for list items
-  // Fields are auto-generated based on the selector - no manual field definition needed
+  selector: string;
   pagination?: PaginationConfig;
-  maxItems?: number; // Maximum number of items to extract
+  maxItems?: number;
 }
 
 export interface PaginationConfig {
-  next?: string; // Next button selector
-  maxPages?: number; // Maximum number of pages to extract
-  waitAfterClick?: number; // Wait time after clicking next (ms)
+  type: 'scrollDown' | 'clickNext' | 'clickLoadMore' | 'scrollUp';
+  selector?: string | null;
 }
 
 export interface BulkExtractConfig {
