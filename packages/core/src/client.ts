@@ -215,50 +215,6 @@ export class MaxunClient {
   }
 
   /**
-   * Setup Google Sheets integration
-   */
-  async setupGoogleSheets(robotId: string, email: string, sheetName: string): Promise<RobotData> {
-    const response = await this.axios.put<ApiResponse<RobotData>>(`/robots/${robotId}`, {
-      google_sheet_email: email,
-      google_sheet_name: sheetName,
-    });
-
-    if (!response.data.data) {
-      throw new MaxunError(`Failed to setup Google Sheets for robot ${robotId}`);
-    }
-    return response.data.data;
-  }
-
-  /**
-   * Setup Airtable integration
-   */
-  async setupAirtable(robotId: string, baseId: string, tableName: string): Promise<RobotData> {
-    const response = await this.axios.put<ApiResponse<RobotData>>(`/robots/${robotId}`, {
-      airtable_base_id: baseId,
-      airtable_table_name: tableName,
-    });
-
-    if (!response.data.data) {
-      throw new MaxunError(`Failed to setup Airtable for robot ${robotId}`);
-    }
-    return response.data.data;
-  }
-
-  /**
-   * Setup N8N integration
-   */
-  async setupN8N(robotId: string, webhookUrl: string): Promise<RobotData> {
-    const response = await this.axios.put<ApiResponse<RobotData>>(`/robots/${robotId}`, {
-      n8n_webhook_url: webhookUrl,
-    });
-
-    if (!response.data.data) {
-      throw new MaxunError(`Failed to setup N8N for robot ${robotId}`);
-    }
-    return response.data.data;
-  }
-
-  /**
    * LLM-based extraction - extract data using natural language prompt
    */
   async extractWithLLM(url: string, options: {

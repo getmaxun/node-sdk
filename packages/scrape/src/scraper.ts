@@ -27,13 +27,10 @@ export class MaxunScrape {
       throw new Error('URL is required');
     }
 
-    // Generate a unique ID for the robot
-    const robotId = `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
     const workflowFile: WorkflowFile = {
       meta: {
         name,
-        id: robotId,
+        id: `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         robotType: 'scrape',
         url,
         formats: options?.formats || ['markdown'],
@@ -41,35 +38,7 @@ export class MaxunScrape {
       workflow: [],
     };
 
-    // Create the robot
     const robot = await this.client.createRobot(workflowFile);
-
     return new Robot(this.client, robot);
-  }
-
-  /**
-   * Get all scrape robots
-   */
-  async getRobots(): Promise<Robot[]> {
-    const robots = await this.client.getRobots();
-    const scrapeRobots = robots.filter(
-      (r) => r.recording_meta.robotType === 'scrape'
-    );
-    return scrapeRobots.map((r) => new Robot(this.client, r));
-  }
-
-  /**
-   * Get a specific robot by ID
-   */
-  async getRobot(robotId: string): Promise<Robot> {
-    const robot = await this.client.getRobot(robotId);
-    return new Robot(this.client, robot);
-  }
-
-  /**
-   * Delete a robot
-   */
-  async deleteRobot(robotId: string): Promise<void> {
-    await this.client.deleteRobot(robotId);
   }
 }

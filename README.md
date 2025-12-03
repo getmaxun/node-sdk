@@ -1,5 +1,9 @@
 # Maxun SDKs
 
+[![npm version](https://img.shields.io/npm/v/@maxun/extract.svg)](https://www.npmjs.com/package/@maxun/extract)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Official SDKs for programmatic web data extraction with Maxun.
 
 ## Packages
@@ -119,12 +123,12 @@ const robot = await extractor
   .create('Product List Extractor')
   .navigate('https://example.com/products')
   .captureList({
-    selector: '.product-item',  // Fields are auto-detected from list items!
+    selector: '.product-item',
     pagination: {
-      next: '.pagination-next',
-      maxPages: 5,
-      waitAfterClick: 2000
-    }
+      type: 'clickNext',
+      selector: '.pagination-next'
+    },
+    maxItems: 50
   });
 ```
 
@@ -207,11 +211,47 @@ const robot = await scraper.create(
 
 ```typescript
 // Schedule robot to run every hour
+// Simple schedule (with defaults)
 await robot.schedule({
   runEvery: 1,
   runEveryUnit: 'HOURS',
   timezone: 'America/New_York'
 });
+
+// Detailed schedule (business hours only)
+await robot.schedule({
+  runEvery: 2,
+  runEveryUnit: 'HOURS',
+  timezone: 'America/New_York',
+  startFrom: 'MONDAY',        // Optional: day of week
+  atTimeStart: '09:00',       // Optional: start time (HH:MM)
+  atTimeEnd: '17:00'          // Optional: end time (HH:MM)
+});
+
+// Weekly schedule
+await robot.schedule({
+  runEvery: 1,
+  runEveryUnit: 'WEEKS',
+  timezone: 'America/New_York',
+  startFrom: 'FRIDAY',
+  atTimeStart: '10:00',
+  atTimeEnd: '23:59'
+});
+
+// Monthly schedule
+await robot.schedule({
+  runEvery: 1,
+  runEveryUnit: 'MONTHS',
+  timezone: 'America/New_York',
+  startFrom: 'SUNDAY',
+  dayOfMonth: 1,              // Optional: day of month (1-31)
+  atTimeStart: '00:00',
+  atTimeEnd: '23:59'
+});
+
+// Get schedule info
+const schedule = robot.getSchedule();
+console.log(schedule?.nextRunAt);
 
 // Remove schedule
 await robot.unschedule();
@@ -227,27 +267,6 @@ await robot.addWebhook({
   headers: {
     'Authorization': 'Bearer your-token'
   }
-});
-```
-
-#### Integrations
-
-```typescript
-// Google Sheets
-await robot.integrate('googleSheets', {
-  email: 'sheet@example.com',
-  sheetName: 'Extracted Data'
-});
-
-// Airtable
-await robot.integrate('airtable', {
-  baseId: 'appXXXXXXXXXXXXXX',
-  tableName: 'Products'
-});
-
-// N8N
-await robot.integrate('n8n', {
-  webhookUrl: 'https://your-n8n.com/webhook/...'
 });
 ```
 
@@ -353,11 +372,53 @@ try {
 
 Both SDKs are written in TypeScript and provide full type definitions out of the box.
 
+## Troubleshooting
+
+### Common Issues
+
+**"API key is missing" or "Invalid API key"**
+- Ensure `MAXUN_API_KEY` environment variable is set
+- Verify the API key is correct in your Maxun dashboard
+
+**"Connection refused" or network errors**
+- Check that your backend server is running
+- Verify the `baseUrl` points to the correct endpoint
+- Default: `http://localhost:5001/api/sdk` for local development
+
+**Robot execution fails**
+- Verify the target URL is accessible
+- Check CSS selectors are valid
+- Review backend logs for detailed error messages
+
+**TypeScript import errors**
+- Run `npm run build` in the SDK directory
+- Ensure packages are properly installed
+- Check `tsconfig.json` settings
+
+**Scheduling not working**
+- Verify backend pgBoss is configured
+- Check timezone is valid (e.g., 'America/New_York')
+- Ensure schedule parameters are correct
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. Check the [examples](./examples) directory for working code
+2. Review error messages and backend logs
+3. Search [GitHub Issues](https://github.com/maxun-dev/maxun-sdks/issues)
+4. Contact support (details below)
+
 ## Support
 
-- Documentation: https://docs.maxun.dev
-- GitHub Issues: https://github.com/maxun-dev/maxun-sdks/issues
-- Email: support@maxun.dev
+- **Documentation**: [https://docs.maxun.dev](https://docs.maxun.dev)
+- **GitHub Issues**: [https://github.com/maxun-dev/maxun-sdks/issues](https://github.com/maxun-dev/maxun-sdks/issues)
+- **Email**: support@maxun.dev
+- **Community**: Join our Discord for discussions and help
+
+## Contributing
+
+We welcome contributions! Please see our contributing guidelines and submit pull requests to our GitHub repository.
 
 ## License
 

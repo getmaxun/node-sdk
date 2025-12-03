@@ -17,7 +17,6 @@
  */
 
 export { MaxunScrape, ScrapeOptions } from './scraper';
-export * from './types';
 
 // Re-export common types from core
 export type {

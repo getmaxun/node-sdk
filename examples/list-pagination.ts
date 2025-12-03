@@ -1,10 +1,11 @@
 /**
- * Smart List Extraction Example
+ * List Pagination Example
  *
  * This example demonstrates:
- * - Extracting lists with specific fields
- * - Automatic pagination handling
- * - Setting max items limit
+ * - Extracting lists with captureList
+ * - Auto-detecting pagination (recommended)
+ * - Manually specifying pagination types
+ * - Setting maxItems limit
  */
 
 import 'dotenv/config';
@@ -18,11 +19,11 @@ async function main() {
 
   try {
     const robot = await extractor
-      .create('Books Extractor')
+      .create('Books List Extractor')
       .navigate('https://books.toscrape.com/')
       .captureList({
         selector: 'article.product_pod',
-        maxItems: 30
+        maxItems: 50
       });
 
     console.log(`Robot created: ${robot.id}`);
@@ -32,6 +33,17 @@ async function main() {
     console.log(`\nExtracted ${result.data.listData?.length || 0} items`);
     console.log('\nFirst 3 items:');
     console.log(JSON.stringify(result.data.listData?.slice(0, 3), null, 2));
+
+    // Other pagination options available:
+    //
+    // Infinite scroll:
+    // pagination: { type: 'scrollDown' }
+    //
+    // Click Next button:
+    // pagination: { type: 'clickNext', selector: '.next a' }
+    //
+    // Click Load More:
+    // pagination: { type: 'clickLoadMore', selector: '.load-more' }
 
   } catch (error: any) {
     console.error('Error:', error.message);

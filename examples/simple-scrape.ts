@@ -1,56 +1,47 @@
 /**
  * Simple Scraping Example
- * Demonstrates basic page scraping with format selection
+ *
+ * This example demonstrates:
+ * - Using the Scrape SDK for simple page scraping
+ * - Getting page content in markdown and HTML formats
+ * - No workflow needed - just URL and format
  */
 
+import 'dotenv/config';
 import { MaxunScrape } from '@maxun/scrape';
 
-async function simpleScrape() {
-  console.log('=== Simple Scraping Example ===\n');
-
+async function main() {
   const scraper = new MaxunScrape({
     apiKey: process.env.MAXUN_API_KEY!,
     baseUrl: process.env.MAXUN_BASE_URL || 'http://localhost:5001/api/sdk'
   });
 
   try {
-    // Create a simple scraper - just URL and formats!
-    console.log('Creating scraper...');
     const robot = await scraper.create(
-      'Wikipedia Scraper Both',
+      'Wikipedia Scraper',
       'https://en.wikipedia.org/wiki/Web_scraping',
       {
-        formats: ['markdown', 'html']  // Can specify one or both
+        formats: ['markdown', 'html']
       }
     );
 
-    console.log(`✓ Robot created: ${robot.id}\n`);
+    console.log(`Robot created: ${robot.id}`);
 
-    // Execute the robot
-    console.log('Executing scraper...');
     const result = await robot.run();
 
-    console.log('✓ Scraping completed!\n');
-    console.log('Results:');
-    console.log(JSON.stringify(result.data, null, 2));
-
-    // Clean up
-    // console.log('\nCleaning up...');
-    // await robot.delete();
-    // console.log('✓ Robot deleted\n');
+    console.log('\nScraping completed');
+    console.log('Markdown length:', result.data.markdown?.length || 0, 'characters');
+    console.log('HTML length:', result.data.html?.length || 0, 'characters');
 
   } catch (error: any) {
     console.error('Error:', error.message);
-    if (error.details) {
-      console.error('Details:', error.details);
-    }
+    process.exit(1);
   }
 }
 
-// Run the example
 if (!process.env.MAXUN_API_KEY) {
-  console.error('Please set MAXUN_API_KEY environment variable');
+  console.error('Error: MAXUN_API_KEY environment variable is required');
   process.exit(1);
 }
 
-simpleScrape();
+main();
