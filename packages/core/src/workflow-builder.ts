@@ -180,15 +180,6 @@ export abstract class WorkflowBuilder {
     return this;
   }
 
-  /**
-   * Set URLs for bulk extraction
-   */
-  urls(urls: string[]): this {
-    this.meta.mode = 'bulk';
-    this.meta.deepExtraction = true;
-    // Deep extraction URLs will be set when creating the robot
-    return this;
-  }
 
   /**
    * Set output formats

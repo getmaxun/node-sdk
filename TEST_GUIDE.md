@@ -380,28 +380,6 @@ const result = await robot.run();
 console.log(`Found ${result.data.listData?.length} items`);
 ```
 
-### Test Bulk Extraction
-
-```typescript
-const robot = await extractor
-  .create('Bulk Test')
-  .bulk({
-    urls: [
-      'https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html',
-      'https://books.toscrape.com/catalogue/tipping-the-velvet_999/index.html'
-    ]
-  })
-  .navigate('https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html')
-  .extract({
-    title: 'h1',
-    price: '.price_color'
-  })
-  .build();
-
-const result = await robot.run({ timeout: 120000 });
-console.log('Bulk extraction completed');
-```
-
 ## Step 8: Verify Database
 
 Check that robots are being created:

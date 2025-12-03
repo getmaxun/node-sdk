@@ -16,8 +16,3 @@ export interface PaginationConfig {
   type: 'scrollDown' | 'clickNext' | 'clickLoadMore' | 'scrollUp';
   selector?: string | null;
 }
-
-export interface BulkExtractConfig {
-  urls: string[];
-  extractUrlsFromPreviousRun?: boolean;
-}

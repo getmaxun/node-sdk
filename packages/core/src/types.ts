@@ -18,8 +18,6 @@ export interface RobotMeta {
   robotType?: RobotType;
   mode?: RobotMode;
   url?: string;
-  deepExtraction?: boolean;
-  extractUrlsFromRuns?: boolean;
   formats?: Format[];
   subscriptionLevel?: number;
 }
@@ -74,7 +72,6 @@ export interface RobotData {
   proxy_url?: string | null;
   proxy_username?: string | null;
   proxy_password?: string | null;
-  deep_extraction_urls?: string[] | null;
   createdAt?: string;
   updatedAt?: string;
 }

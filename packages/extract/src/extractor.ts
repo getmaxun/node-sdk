@@ -27,7 +27,6 @@ export class MaxunExtract {
   async build(builder: ExtractBuilder): Promise<Robot> {
     const workflow = builder.getWorkflowArray();
     const meta = builder.getMeta();
-    const deepExtractionUrls = builder.getDeepExtractionUrls();
 
     // Generate a unique ID for the robot
     const robotId = `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -37,11 +36,6 @@ export class MaxunExtract {
       meta: meta as any,
       workflow,
     };
-
-    // Add deep extraction URLs if configured
-    if (deepExtractionUrls.length > 0) {
-      workflowFile.deepExtractionUrls = deepExtractionUrls;
-    }
 
     // Create the robot
     const robot = await this.client.createRobot(workflowFile);

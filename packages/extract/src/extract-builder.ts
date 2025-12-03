@@ -4,10 +4,9 @@
  */
 
 import { WorkflowBuilder, Robot } from '@maxun/core';
-import { ExtractFields, ExtractListConfig, BulkExtractConfig } from './types';
+import { ExtractFields, ExtractListConfig } from './types';
 
 export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot> {
-  private deepExtractionUrls: string[] = [];
   private extractor: any; // Will be set by MaxunExtract
 
   constructor(name: string) {
@@ -79,25 +78,4 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
     return this;
   }
 
-  /**
-   * Configure bulk extraction from multiple URLs
-   */
-  bulk(config: BulkExtractConfig): this {
-    this.meta.mode = 'bulk';
-    this.meta.deepExtraction = true;
-    this.deepExtractionUrls = config.urls;
-
-    if (config.extractUrlsFromPreviousRun) {
-      this.meta.extractUrlsFromRuns = true;
-    }
-
-    return this;
-  }
-
-  /**
-   * Get deep extraction URLs
-   */
-  getDeepExtractionUrls(): string[] {
-    return this.deepExtractionUrls;
-  }
 }

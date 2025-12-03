@@ -130,26 +130,6 @@ const robot = await extractor
 
 **Key feature:** Fields are automatically detected from the list selector - no need to manually specify field selectors!
 
-#### Bulk Extraction from Multiple URLs
-
-```typescript
-const robot = await extractor
-  .create('Bulk Product Extractor')
-  .mode('bulk')
-  .bulk({
-    urls: [
-      'https://example.com/product/1',
-      'https://example.com/product/2',
-      'https://example.com/product/3'
-    ]
-  })
-  .navigate('https://example.com/product/1') // First URL
-  .captureText({
-    title: '.title',
-    price: '.price'
-  });
-```
-
 #### Advanced Workflow with Form Filling
 
 ```typescript
