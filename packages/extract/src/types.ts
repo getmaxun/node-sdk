@@ -3,24 +3,16 @@
  */
 
 export interface ExtractFields {
-  [fieldName: string]: string; // fieldName: cssSelector
+  [fieldName: string]: string;
 }
 
 export interface ExtractListConfig {
-  selector: string; // Container selector for list items
-  fields: ExtractFields; // Fields to extract from each item
+  selector: string;
   pagination?: PaginationConfig;
-  maxItems?: number; // Maximum number of items to extract
-  fallbackSelectors?: { [fieldName: string]: string[] };
+  maxItems?: number;
 }
 
 export interface PaginationConfig {
-  next?: string; // Next button selector
-  maxPages?: number; // Maximum number of pages to extract
-  waitAfterClick?: number; // Wait time after clicking next (ms)
-}
-
-export interface BulkExtractConfig {
-  urls: string[];
-  extractUrlsFromPreviousRun?: boolean;
+  type: 'scrollDown' | 'clickNext' | 'clickLoadMore' | 'scrollUp';
+  selector?: string | null;
 }

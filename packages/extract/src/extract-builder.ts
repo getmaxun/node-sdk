@@ -4,10 +4,9 @@
  */
 
 import { WorkflowBuilder, Robot } from '@maxun/core';
-import { ExtractFields, ExtractListConfig, BulkExtractConfig } from './types';
+import { ExtractFields, ExtractListConfig } from './types';
 
-export class ExtractBuilder extends WorkflowBuilder {
-  private deepExtractionUrls: string[] = [];
+export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot> {
   private extractor: any; // Will be set by MaxunExtract
 
   constructor(name: string) {
@@ -23,19 +22,24 @@ export class ExtractBuilder extends WorkflowBuilder {
   }
 
   /**
-   * Build and create the robot
+   * Make the builder awaitable - implements PromiseLike<Robot>
    */
-  async build(): Promise<Robot> {
+  then<TResult1 = Robot, TResult2 = never>(
+    onfulfilled?: ((value: Robot) => TResult1 | PromiseLike<TResult1>) | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null
+  ): PromiseLike<TResult1 | TResult2> {
     if (!this.extractor) {
-      throw new Error('Builder not properly initialized. Use extractor.create() to create a builder.');
+      return Promise.reject(
+        new Error('Builder not properly initialized. Use extractor.create() to create a builder.')
+      ).then(onfulfilled, onrejected);
     }
-    return await this.extractor.build(this);
+    return this.extractor.build(this).then(onfulfilled, onrejected);
   }
 
   /**
-   * Extract specific fields from the page
+   * Capture specific text fields from the page
    */
-  extract(fields: ExtractFields, name?: string): this {
+  captureText(fields: ExtractFields, name?: string): this {
     // Pass fields directly as plain selectors
     this.addAction({
       action: 'scrapeSchema',
@@ -47,24 +51,21 @@ export class ExtractBuilder extends WorkflowBuilder {
   }
 
   /**
-   * Extract a list of items with pagination support
+   * Capture a list of items with pagination support
+   * Fields are automatically detected from the list selector
    */
-  extractList(config: ExtractListConfig, name?: string): this {
-    const { selector, fields, pagination } = config;
+  captureList(config: ExtractListConfig, name?: string): this {
+    const { selector, pagination } = config;
 
-    // Build scrapeList configuration with plain field selectors
     const scrapeListConfig: any = {
       itemSelector: selector,
-      fields: fields,
       maxItems: config.maxItems || 100
     };
 
-    // Add pagination if configured
     if (pagination) {
       scrapeListConfig.pagination = {
-        nextButtonSelector: pagination.next,
-        maxPages: pagination.maxPages || 10,
-        waitAfterClick: pagination.waitAfterClick || 2000,
+        type: pagination.type,
+        selector: pagination.selector || null
       };
     }
 
@@ -77,25 +78,4 @@ export class ExtractBuilder extends WorkflowBuilder {
     return this;
   }
 
-  /**
-   * Configure bulk extraction from multiple URLs
-   */
-  bulk(config: BulkExtractConfig): this {
-    this.meta.mode = 'bulk';
-    this.meta.deepExtraction = true;
-    this.deepExtractionUrls = config.urls;
-
-    if (config.extractUrlsFromPreviousRun) {
-      this.meta.extractUrlsFromRuns = true;
-    }
-
-    return this;
-  }
-
-  /**
-   * Get deep extraction URLs
-   */
-  getDeepExtractionUrls(): string[] {
-    return this.deepExtractionUrls;
-  }
 }

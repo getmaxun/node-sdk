@@ -18,8 +18,6 @@ export interface RobotMeta {
   robotType?: RobotType;
   mode?: RobotMode;
   url?: string;
-  deepExtraction?: boolean;
-  extractUrlsFromRuns?: boolean;
   formats?: Format[];
   subscriptionLevel?: number;
 }
@@ -68,13 +66,11 @@ export interface RobotData {
   google_sheet_name?: string | null;
   airtable_base_id?: string | null;
   airtable_table_name?: string | null;
-  n8n_webhook_url?: string | null;
   schedule?: ScheduleConfig | null;
   webhooks?: WebhookConfig[] | null;
   proxy_url?: string | null;
   proxy_username?: string | null;
   proxy_password?: string | null;
-  deep_extraction_urls?: string[] | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -104,7 +100,13 @@ export interface ScheduleConfig {
   runEvery: number;
   runEveryUnit: TimeUnit;
   timezone: string;
+  startFrom?: 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY';
+  dayOfMonth?: number;
+  atTimeStart?: string; // Format: "HH:MM"
+  atTimeEnd?: string; // Format: "HH:MM"
   cronExpression?: string;
+  lastRunAt?: string;
+  nextRunAt?: string;
 }
 
 /**
@@ -116,26 +118,6 @@ export interface WebhookConfig {
   headers?: Record<string, string>;
 }
 
-/**
- * Integration types
- */
-export type IntegrationType = 'googleSheets' | 'airtable' | 'n8n';
-
-export interface GoogleSheetsConfig {
-  email: string;
-  sheetName: string;
-}
-
-export interface AirtableConfig {
-  baseId: string;
-  tableName: string;
-}
-
-export interface N8NConfig {
-  webhookUrl: string;
-}
-
-export type IntegrationConfig = GoogleSheetsConfig | AirtableConfig | N8NConfig;
 
 /**
  * SDK Configuration
@@ -158,6 +140,9 @@ export interface RunResult {
   data: {
     textData?: Record<string, any>;
     listData?: Record<string, any>[];
+    markdown?: string;
+    html?: string;
+    binaryOutput?: Record<string, string>;
   };
   screenshots?: string[];
   status: RunStatus;

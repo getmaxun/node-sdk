@@ -27,7 +27,6 @@ export class MaxunExtract {
   async build(builder: ExtractBuilder): Promise<Robot> {
     const workflow = builder.getWorkflowArray();
     const meta = builder.getMeta();
-    const deepExtractionUrls = builder.getDeepExtractionUrls();
 
     // Generate a unique ID for the robot
     const robotId = `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -37,11 +36,6 @@ export class MaxunExtract {
       meta: meta as any,
       workflow,
     };
-
-    // Add deep extraction URLs if configured
-    if (deepExtractionUrls.length > 0) {
-      workflowFile.deepExtractionUrls = deepExtractionUrls;
-    }
 
     // Create the robot
     const robot = await this.client.createRobot(workflowFile);
@@ -73,5 +67,32 @@ export class MaxunExtract {
    */
   async deleteRobot(robotId: string): Promise<void> {
     await this.client.deleteRobot(robotId);
+  }
+
+  /**
+   * LLM-based extraction - create a robot using natural language prompt
+   * The robot is saved and can be executed anytime by the user
+   *
+   * @param url - The URL to extract data from
+   * @param options - Extraction options
+   * @param options.prompt - Natural language prompt describing what to extract
+   * @param options.llmProvider - LLM provider to use: 'anthropic', 'openai', or 'ollama' (default: 'ollama')
+   * @param options.llmModel - Model name (default: 'llama3.2-vision' for ollama, 'claude-3-5-sonnet-20241022' for anthropic, 'gpt-4-vision-preview' for openai)
+   * @param options.llmApiKey - API key for the LLM provider (not needed for ollama)
+   * @param options.llmBaseUrl - Base URL for the LLM provider (default: 'http://localhost:11434' for ollama)
+   * @param options.robotName - Optional custom name for the robot
+   * @returns Robot instance that can be executed
+   */
+  async extract(url: string, options: {
+    prompt: string;
+    llmProvider?: 'anthropic' | 'openai' | 'ollama';
+    llmModel?: string;
+    llmApiKey?: string;
+    llmBaseUrl?: string;
+    robotName?: string;
+  }): Promise<Robot> {
+    const robotData = await this.client.extractWithLLM(url, options);
+    const robot = await this.client.getRobot(robotData.robotId);
+    return new Robot(this.client, robot);
   }
 }

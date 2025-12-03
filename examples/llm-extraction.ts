@@ -1,10 +1,10 @@
 /**
- * Basic Extraction Example
+ * Smart List Extraction Example
  *
  * This example demonstrates:
- * - Creating a robot with captureText
- * - Extracting specific fields from a single page
- * - Running the robot and retrieving results
+ * - Extracting lists with specific fields
+ * - Automatic pagination handling
+ * - Setting max items limit
  */
 
 import 'dotenv/config';
@@ -18,21 +18,20 @@ async function main() {
 
   try {
     const robot = await extractor
-      .create('Product Details Extractor')
-      .navigate('https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html')
-      .captureText({
-        title: 'h1',
-        price: '.price_color',
-        availability: '.availability',
-        description: '#product_description + p'
+      .create('Books Extractor')
+      .navigate('https://books.toscrape.com/')
+      .captureList({
+        selector: 'article.product_pod',
+        maxItems: 30
       });
 
     console.log(`Robot created: ${robot.id}`);
 
     const result = await robot.run();
 
-    console.log('\nExtracted data:');
-    console.log(JSON.stringify(result.data.textData, null, 2));
+    console.log(`\nExtracted ${result.data.listData?.length || 0} items`);
+    console.log('\nFirst 3 items:');
+    console.log(JSON.stringify(result.data.listData?.slice(0, 3), null, 2));
 
   } catch (error: any) {
     console.error('Error:', error.message);

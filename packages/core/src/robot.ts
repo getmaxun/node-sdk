@@ -11,10 +11,6 @@ import {
   ScheduleConfig,
   WebhookConfig,
   ExecutionOptions,
-  IntegrationType,
-  GoogleSheetsConfig,
-  AirtableConfig,
-  N8NConfig,
 } from './types';
 
 export class Robot {
@@ -115,35 +111,35 @@ export class Robot {
   }
 
   /**
-   * Setup an integration
+   * Update the robot's workflow or metadata
    */
-  async integrate(
-    type: IntegrationType,
-    config: GoogleSheetsConfig | AirtableConfig | N8NConfig
-  ): Promise<void> {
-    let updated: RobotData;
-
-    switch (type) {
-      case 'googleSheets':
-        const gsConfig = config as GoogleSheetsConfig;
-        updated = await this.client.setupGoogleSheets(this.id, gsConfig.email, gsConfig.sheetName);
-        break;
-
-      case 'airtable':
-        const atConfig = config as AirtableConfig;
-        updated = await this.client.setupAirtable(this.id, atConfig.baseId, atConfig.tableName);
-        break;
-
-      case 'n8n':
-        const n8nConfig = config as N8NConfig;
-        updated = await this.client.setupN8N(this.id, n8nConfig.webhookUrl);
-        break;
-
-      default:
-        throw new Error(`Unknown integration type: ${type}`);
-    }
-
+  async update(updates: { meta?: Partial<RobotData['recording_meta']>; workflow?: any[] }): Promise<void> {
+    const updated = await this.client.updateRobot(this.id, updates as any);
     this.robotData = updated;
+  }
+
+  /**
+   * Get all webhooks for this robot
+   */
+  getWebhooks(): WebhookConfig[] | null {
+    return this.robotData.webhooks || null;
+  }
+
+  /**
+   * Remove all webhooks
+   */
+  async removeWebhooks(): Promise<void> {
+    const updated = await this.client.updateRobot(this.id, {
+      webhooks: null,
+    } as any);
+    this.robotData = updated;
+  }
+
+  /**
+   * Get schedule configuration
+   */
+  getSchedule(): ScheduleConfig | null {
+    return this.robotData.schedule || null;
   }
 
   /**

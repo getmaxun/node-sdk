@@ -1,10 +1,11 @@
 /**
- * Chained Actions Example
+ * List Pagination Example
  *
  * This example demonstrates:
- * - Chaining multiple actions in a workflow
- * - Combining captureText and captureList
- * - Extracting both single fields and lists from the same page
+ * - Extracting lists with captureList
+ * - Auto-detecting pagination (recommended)
+ * - Manually specifying pagination types
+ * - Setting maxItems limit
  */
 
 import 'dotenv/config';
@@ -18,26 +19,31 @@ async function main() {
 
   try {
     const robot = await extractor
-      .create('Books Page Extractor')
+      .create('Books List Extractor')
       .navigate('https://books.toscrape.com/')
-      .captureText({
-        pageTitle: 'h1'
-      }, 'Page Info')
       .captureList({
         selector: 'article.product_pod',
-        maxItems: 20
-      }, 'Books List');
+        maxItems: 50
+      });
 
     console.log(`Robot created: ${robot.id}`);
 
     const result = await robot.run();
 
-    console.log('\nPage Info:');
-    console.log(result.data.textData);
-
-    console.log('\nBooks extracted:', result.data.listData?.length || 0);
-    console.log('First 3 books:');
+    console.log(`\nExtracted ${result.data.listData?.length || 0} items`);
+    console.log('\nFirst 3 items:');
     console.log(JSON.stringify(result.data.listData?.slice(0, 3), null, 2));
+
+    // Other pagination options available:
+    //
+    // Infinite scroll:
+    // pagination: { type: 'scrollDown' }
+    //
+    // Click Next button:
+    // pagination: { type: 'clickNext', selector: '.next a' }
+    //
+    // Click Load More:
+    // pagination: { type: 'clickLoadMore', selector: '.load-more' }
 
   } catch (error: any) {
     console.error('Error:', error.message);
