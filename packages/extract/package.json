@@ -19,9 +19,7 @@
   "author": "Maxun",
   "license": "MIT",
   "dependencies": {
-    "@maxun/core": "^0.1.0",
-    "@types/readline-sync": "^1.4.8",
-    "readline-sync": "^1.4.10"
+    "@maxun/core": "^0.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

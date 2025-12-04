@@ -10,23 +10,15 @@ export interface ExtractListConfig {
   selector: string;
   pagination?: PaginationConfig;
   maxItems?: number;
-  fields?: FieldMapping[];
+  /**
+   * Optional field mapping by index (1-based)
+   * Example: { 1: 'title', 2: 'price', 4: 'rating' }
+   * If not provided, all fields will be extracted with auto-generated names (Label 1, Label 2, etc.)
+   */
+  fields?: { [index: number]: string };
 }
 
 export interface PaginationConfig {
   type: 'scrollDown' | 'clickNext' | 'clickLoadMore' | 'scrollUp';
   selector?: string | null;
-}
-
-export interface FieldMapping {
-  originalName: string;
-  customName: string;
-  selector: string;
-  include: boolean;
-}
-
-export interface PreviewField {
-  name: string;
-  selector: string;
-  sampleValue: string;
 }
