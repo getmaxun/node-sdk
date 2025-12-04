@@ -1,17 +1,9 @@
 /**
- * Base Robot class
- * Represents a created robot with execution and management capabilities
+ * Robot class - represents a saved workflow that can be executed
  */
 
-import { MaxunClient } from './client';
-import {
-  RobotData,
-  Run,
-  RunResult,
-  ScheduleConfig,
-  WebhookConfig,
-  ExecutionOptions,
-} from './types';
+import { RunResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run } from '../types';
+import { MaxunClient } from '../client/maxun-client';
 
 export class Robot {
   protected client: MaxunClient;

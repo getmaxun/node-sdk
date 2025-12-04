@@ -1,13 +1,14 @@
 /**
- * Extract Workflow Builder
- * Fluent API for building extraction workflows
+ * Extract-specific workflow builder
  */
 
-import { WorkflowBuilder, Robot } from '@maxun/core';
-import { ExtractFields, ExtractListConfig } from './types';
+import { WorkflowBuilder } from './workflow-builder';
+import { ExtractListConfig, PaginationConfig, ExtractFields } from '../types';
+import type { MaxunExtract } from '../extract';
+import type { Robot } from '../robot/robot';
 
 export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot> {
-  private extractor: any; // Will be set by MaxunExtract
+  private extractor!: MaxunExtract; // Will be set by MaxunExtract
 
   constructor(name: string) {
     super(name, 'extract');

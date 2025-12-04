@@ -8,7 +8,7 @@
  */
 
 import 'dotenv/config';
-import { MaxunExtract } from '@maxun/extract';
+import { MaxunExtract } from 'maxun-sdk';
 
 async function main() {
   const extractor = new MaxunExtract({

@@ -1,4 +1,52 @@
-# Maxun SDKs
+# Maxun SDK
+
+Unified SDK for programmatic web automation and data extraction with Maxun.
+
+## Installation
+
+```bash
+npm install maxun-sdk
+```
+
+## Quick Start
+
+```typescript
+import { MaxunExtract } from 'maxun-sdk';
+
+const extractor = new MaxunExtract({
+  apiKey: 'your-api-key',
+  baseUrl: 'https://app.maxun.dev/api/sdk'
+});
+
+// Create and run an extraction
+const robot = await extractor
+  .create('Product Prices')
+  .navigate('https://example.com/products')
+  .captureList({
+    selector: '.product-card',
+    maxItems: 50
+  });
+
+const result = await robot.run();
+console.log(result.data.listData);
+```
+
+## Features
+
+- **Web Automation**: Navigate, click, type, and interact with any website
+- **Data Extraction**: Extract text, lists, and structured data from web pages  
+- **LLM Integration**: Use AI to extract data with natural language prompts
+- **Scheduling**: Set up recurring data extraction jobs
+- **Webhooks**: Get notified when extractions complete
+- **Multiple Formats**: Export data as JSON, Markdown, or HTML
+
+## Main Classes
+
+### MaxunExtract
+For structured data extraction and list scraping:
+
+```typescript
+import { MaxunExtract } from 'maxun-sdk';
 
 [![npm version](https://img.shields.io/npm/v/@maxun/extract.svg)](https://www.npmjs.com/package/@maxun/extract)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)

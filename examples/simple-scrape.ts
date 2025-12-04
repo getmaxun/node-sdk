@@ -8,7 +8,7 @@
  */
 
 import 'dotenv/config';
-import { MaxunScrape } from '@maxun/scrape';
+import { MaxunScrape } from 'maxun-sdk';
 
 async function main() {
   const scraper = new MaxunScrape({

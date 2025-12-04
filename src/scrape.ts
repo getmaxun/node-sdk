@@ -2,7 +2,10 @@
  * MaxunScrape - Main class for the Scrape SDK
  */
 
-import { MaxunClient, MaxunConfig, Robot, WorkflowFile, Format } from '@maxun/core';
+import { MaxunClient } from './client/maxun-client';
+import { MaxunConfig, WorkflowFile, RobotData, Format } from './types';
+import { WorkflowBuilder } from './builders/workflow-builder';
+import { Robot } from './robot/robot';
 
 export interface ScrapeOptions {
   formats?: Format[];

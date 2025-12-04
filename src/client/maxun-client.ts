@@ -17,7 +17,7 @@ import {
   MaxunError,
   WorkflowFile,
   ExecutionOptions,
-} from './types';
+} from '../types';
 
 export class MaxunClient {
   private axios: AxiosInstance;
