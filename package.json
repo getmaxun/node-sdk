@@ -1,23 +1,41 @@
 {
-  "name": "maxun-sdks",
+  "name": "maxun-sdk",
   "version": "1.0.0",
-  "private": true,
-  "description": "Maxun SDK monorepo for programmatic web data extraction",
-  "workspaces": [
-    "packages/*"
+  "description": "Unified Maxun SDK for programmatic web data extraction and automation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspaces",
-    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "dotenv": "^16.4.5",
-    "typescript": "^5.3.0",
-    "tsx": "^4.7.0"
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "keywords": [
+    "web-scraping",
+    "automation",
+    "data-extraction",
+    "web-automation",
+    "scraping",
+    "maxun"
+  ],
+  "author": "",
+  "license": "ISC",
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "ollama": "^0.6.3",
+    "openai": "^6.9.1"
   }
 }

@@ -7,7 +7,7 @@
  */
 
 import 'dotenv/config';
-import { MaxunExtract } from '@maxun/extract';
+import { MaxunExtract } from 'maxun-sdk';
 
 async function completeWorkflowExample() {
   console.log('=== Complete Workflow Example ===\n');

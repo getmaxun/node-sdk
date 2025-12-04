@@ -12,7 +12,7 @@ import {
   RobotType,
   RobotMode,
   Format,
-} from './types';
+} from '../types';
 
 export abstract class WorkflowBuilder {
   protected workflow: Workflow = [];

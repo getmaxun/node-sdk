@@ -1,4 +1,52 @@
-# Maxun SDKs
+# Maxun SDK
+
+Unified SDK for programmatic web automation and data extraction with Maxun.
+
+## Installation
+
+```bash
+npm install maxun-sdk
+```
+
+## Quick Start
+
+```typescript
+import { MaxunExtract } from 'maxun-sdk';
+
+const extractor = new MaxunExtract({
+  apiKey: 'your-api-key',
+  baseUrl: 'https://app.maxun.dev/api/sdk'
+});
+
+// Create and run an extraction
+const robot = await extractor
+  .create('Product Prices')
+  .navigate('https://example.com/products')
+  .captureList({
+    selector: '.product-card',
+    maxItems: 50
+  });
+
+const result = await robot.run();
+console.log(result.data.listData);
+```
+
+## Features
+
+- **Web Automation**: Navigate, click, type, and interact with any website
+- **Data Extraction**: Extract text, lists, and structured data from web pages  
+- **LLM Integration**: Use AI to extract data with natural language prompts
+- **Scheduling**: Set up recurring data extraction jobs
+- **Webhooks**: Get notified when extractions complete
+- **Multiple Formats**: Export data as JSON, Markdown, or HTML
+
+## Main Classes
+
+### MaxunExtract
+For structured data extraction and list scraping:
+
+```typescript
+import { MaxunExtract } from 'maxun-sdk';
 
 [![npm version](https://img.shields.io/npm/v/@maxun/extract.svg)](https://www.npmjs.com/package/@maxun/extract)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
@@ -132,7 +180,43 @@ const robot = await extractor
   });
 ```
 
-**Key feature:** Fields are automatically detected from the list selector - no need to manually specify field selectors!
+**Key features:** 
+- Fields are automatically detected from the list selector - no need to manually specify field selectors!
+- By default, **all fields** are extracted with auto-generated names (Label 1, Label 2, etc.)
+- You can select **specific fields by index** using the `fields` parameter
+
+#### Selecting Specific Fields by Index
+
+To extract only certain fields and give them custom names:
+
+```typescript
+const robot = await extractor
+  .create('Product List Extractor')
+  .navigate('https://example.com/products')
+  .captureList({
+    selector: '.product-item',
+    // Extract only fields at positions 1, 2, and 4 with custom names
+    fields: {
+      1: 'Product Name',
+      2: 'Price',
+      4: 'Rating'
+    },
+    maxItems: 50
+  });
+
+// Result data will use your custom field names:
+// [
+//   { productName: 'Product A', price: '$29.99', rating: '4.5' },
+//   { productName: 'Product B', price: '$39.99', rating: '4.8' },
+//   ...
+// ]
+```
+
+**Field indexing:**
+- Indexes are 1-based (1 = first field, 2 = second field, etc.)
+- Only specified fields are extracted
+- Each field gets the custom name you assign
+- Invalid indexes are skipped with a warning
 
 #### Advanced Workflow with Form Filling
 
