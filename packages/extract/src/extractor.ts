@@ -6,7 +6,7 @@ import { MaxunClient, MaxunConfig, Robot, WorkflowFile } from '@maxun/core';
 import { ExtractBuilder } from './extract-builder';
 
 export class MaxunExtract {
-  private client: MaxunClient;
+  public client: MaxunClient;
 
   constructor(config: MaxunConfig) {
     this.client = new MaxunClient(config);

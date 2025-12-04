@@ -4,6 +4,8 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
+import http from 'http';
+import https from 'https';
 import {
   MaxunConfig,
   RobotData,
@@ -83,7 +85,15 @@ export class MaxunClient {
    * Create a new robot
    */
   async createRobot(workflowFile: WorkflowFile): Promise<RobotData> {
-    const response = await this.axios.post<ApiResponse<RobotData>>('/robots', workflowFile);
+    // Create a fresh HTTP agent for this request to avoid stale connections
+    const httpAgent = new http.Agent({ keepAlive: false });
+    const httpsAgent = new https.Agent({ keepAlive: false });
+
+    const response = await this.axios.post<ApiResponse<RobotData>>('/robots', workflowFile, {
+      timeout: 120000, // 2 minutes for enrichment process
+      httpAgent,
+      httpsAgent,
+    });
     if (!response.data.data) {
       throw new MaxunError('Failed to create robot');
     }
@@ -243,6 +253,29 @@ export class MaxunClient {
 
     if (!response.data.data) {
       throw new MaxunError('Failed to extract data with LLM');
+    }
+
+    return response.data.data;
+  }
+
+  /**
+   * Preview list extraction fields before saving
+   */
+  async previewListFields(url: string, selector: string, sampleSize: number = 2): Promise<any> {
+    const response = await this.axios.post<ApiResponse<any>>(
+      '/extract/preview-list',
+      {
+        url,
+        selector,
+        sampleSize,
+      },
+      {
+        timeout: 60000,
+      }
+    );
+
+    if (!response.data.data) {
+      throw new MaxunError('Failed to preview list fields');
     }
 
     return response.data.data;
