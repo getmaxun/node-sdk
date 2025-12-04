@@ -37,12 +37,10 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
 
   /**
    * Capture a list of items with pagination support
+   * All fields are automatically detected and extracted
    * 
    * @param config - List extraction configuration
    * @param config.selector - CSS selector for list items
-   * @param config.fields - Optional index-based field mapping (1-based indexes)
-   *                        Example: { 1: 'title', 2: 'price', 4: 'rating' }
-   *                        If not provided, all fields will be extracted with auto-generated names
    * @param config.pagination - Optional pagination configuration
    * @param config.maxItems - Maximum number of items to extract (default: 100)
    * @param name - Optional action name
@@ -52,20 +50,6 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
       itemSelector: config.selector,
       maxItems: config.maxItems || 100
     };
-
-    if (config.fields && Object.keys(config.fields).length > 0) {
-      const indexes = Object.keys(config.fields).map(k => parseInt(k, 10));
-      const invalidIndexes = indexes.filter(idx => !Number.isInteger(idx) || idx < 1);
-      
-      if (invalidIndexes.length > 0) {
-        throw new Error(
-          `Invalid field indexes: ${invalidIndexes.join(', ')}. ` +
-          `Field indexes must be positive integers (1-based).`
-        );
-      }
-
-      scrapeListConfig.fieldIndexMapping = config.fields;
-    }
 
     if (config.pagination) {
       scrapeListConfig.pagination = {
