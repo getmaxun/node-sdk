@@ -20,15 +20,15 @@ async function completeWorkflowExample() {
   try {
     console.log('Creating full extraction robot...');
     const robot = await extractor
-      .create('E-commerce Monitor')
-      .navigate('https://books.toscrape.com/')
+      .create('Trending Books Daily')
+      .navigate('https://openlibrary.org/trending/daily')
       .captureList({
-        selector: 'article.product_pod',
+        selector: 'li.searchResultItem.sri--w-main',
         pagination: {
           type: 'clickNext',
-          selector: '.next a'
+          selector: 'a[data-ol-link-track="Pager|Next"]'
         },
-        maxItems: 100
+        maxItems: 25
       });
 
     console.log(`✓ Robot created: ${robot.id}\n`);
@@ -42,18 +42,11 @@ async function completeWorkflowExample() {
 
     console.log('Scheduling robot to run every 10 minutes...');
     await robot.schedule({
-      runEvery: 10,
-      runEveryUnit: 'MINUTES',
-      timezone: 'America/New_York'
+      runEvery: 1,
+      runEveryUnit: 'DAYS',
+      timezone: 'UTC'
     });
     console.log('✓ Robot scheduled\n');
-
-    console.log('Running initial extraction...');
-    const result = await robot.run({ timeout: 300000 });
-    console.log(`✓ Initial run completed!`);
-    console.log(`  Status: ${result.status}`);
-    console.log(`  Items extracted: ${result.data.listData?.length || 0}`);
-    console.log(`  Run ID: ${result.runId}\n`);
 
     console.log('Robot Configuration Summary:');
     console.log(`  Name: ${robot.name}`);

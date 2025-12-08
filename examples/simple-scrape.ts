@@ -24,7 +24,7 @@ async function main() {
       'Wikipedia Web Scraping Article',
       'https://en.wikipedia.org/wiki/Web_scraping',
       {
-        formats: ['markdown', 'html', 'screenshot-fullpage']
+        formats: ['markdown', 'html', 'screenshot-fullpage', 'screenshot-visible']
       }
     );
 

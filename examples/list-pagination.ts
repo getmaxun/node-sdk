@@ -20,13 +20,14 @@ async function main() {
   });
 
   try {
-    // Extract trending repositories from GitHub
+    // Extract trending repositories from GitHub. 
+    // Auto-detects clickNext pagination.
     const robot = await extractor
-      .create('GitHub Trending Repos')
-      .navigate('https://github.com/trending')
+      .create('GitHub Repositories (AB)')
+      .navigate('https://github.com/ab?tab=repositories')
       .captureList({
-        selector: 'article.Box-row',
-        maxItems: 25
+        selector: 'li.col-12.d-flex.flex-justify-between.width-full.py-4.border-bottom.color-border-muted.public.source',
+        maxItems: 100
       });
 
     console.log(`Robot created: ${robot.id}`);

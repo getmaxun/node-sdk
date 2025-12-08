@@ -20,7 +20,7 @@ async function main() {
 
   try {
     const robot = await extractor
-      .create('Test Robot')
+      .create('Books Scraper')
       .navigate('https://books.toscrape.com/')
       .captureList({
         selector: 'article.product_pod',
@@ -36,7 +36,7 @@ async function main() {
     console.log(`Fetched robot: ${fetchedRobot.name}`);
 
     await robot.update({
-      meta: { name: 'Updated Test Robot' }
+      meta: { name: 'Updated Books Scraper' }
     });
     await robot.refresh();
     console.log(`Updated name: ${robot.name}`);
