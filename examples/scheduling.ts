@@ -22,11 +22,11 @@ async function main() {
   try {
     // Create a robot to track Dev.to latest posts
     const robot = await extractor
-      .create('Dev.to Latest Posts Tracker')
-      .navigate('https://dev.to/latest')
+      .create('Google Trends (US)')
+      .navigate('https://trends.google.com/trending?geo=US')
       .captureList({
-        selector: 'article.crayons-story',
-        maxItems: 15
+        selector: 'tr.enOdEe-wZVHld-xMbwt.UlR2Yc',
+        maxItems: 20
       });
 
     console.log(`Robot created: ${robot.id}`);

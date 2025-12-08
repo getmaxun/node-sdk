@@ -22,15 +22,15 @@ async function main() {
   try {
     // Navigate to Product Hunt and extract today's products
     const robot = await extractor
-      .create('Product Hunt Daily Products')
-      .navigate('https://www.producthunt.com')
+      .create('Premier League Score Table')
+      .navigate('https://www.bbc.com/sport/football/tables')
       .captureText({
-        Title: '[data-test="homepage-tagline"]'
-      }, 'Top Products')
+        Title: 'a#tab-PremierLeague'
+      }, 'Text Data')
       .captureList({
-        selector: 'section.group.relative.isolate.flex.flex-row.items-start.gap-4.rounded-xl.px-0.py-4.transition-all.duration-300.sm:-mx-4.sm:p-4.has-[[data-target]]:cursor-pointer.has-[[data-target]]:hover:sm:bg-gray-100.has-[[data-target]]:dark:hover:sm:bg-gray-dark-800.relative.isolate',
+        selector: 'tr.ssrcss-1urqilq-CellsRow.e13j9mpy2',
         maxItems: 10
-      }, 'Products');
+      }, 'Football Scores');
 
     console.log(`Robot created: ${robot.id}`);
 

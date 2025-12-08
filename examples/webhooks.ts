@@ -22,9 +22,9 @@ async function main() {
     // Create a robot to extract Indie Hackers posts
     const robot = await extractor
       .create('Indie Hackers Posts Monitor')
-      .navigate('https://www.indiehackers.com')
+      .navigate('https://www.indiehackers.com/tags/artificial-intelligence')
       .captureList({
-        selector: '.feed-item',
+        selector: 'a.ember-view.portal-entry',
         maxItems: 10
       });
 
@@ -55,21 +55,6 @@ async function main() {
     console.log(`  Status: ${result.status}`);
     console.log(`  Items extracted: ${result.data.listData?.length || 0}`);
     console.log('\n→ Webhook notification has been sent to your endpoint');
-
-    // Note: In production, you would NOT remove webhooks immediately
-    // This is just for demonstration purposes
-    await robot.removeWebhooks();
-    console.log('\n✓ Webhooks removed (for demo purposes)');
-
-    console.log('\n=== Webhook Payload Example ===');
-    console.log('{');
-    console.log('  "event": "run.completed",');
-    console.log('  "robotId": "robot_123",');
-    console.log('  "runId": "run_456",');
-    console.log('  "status": "success",');
-    console.log('  "data": { ... },');
-    console.log('  "timestamp": "2024-01-15T10:30:00Z"');
-    console.log('}');
 
   } catch (error: any) {
     console.error('Error:', error.message);
