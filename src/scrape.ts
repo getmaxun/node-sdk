@@ -8,6 +8,15 @@ import { WorkflowBuilder } from './builders/workflow-builder';
 import { Robot } from './robot/robot';
 
 export interface ScrapeOptions {
+  /**
+   * Output formats for scraping
+   * - 'markdown': Page content in markdown format
+   * - 'html': Page content in HTML format
+   * - 'screenshot-visible': Screenshot of visible viewport
+   * - 'screenshot-fullpage': Full page screenshot
+   *
+   * Default: ['markdown']
+   */
   formats?: Format[];
 }
 

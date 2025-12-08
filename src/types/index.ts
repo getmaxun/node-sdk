@@ -8,7 +8,7 @@
 
 export type RobotType = 'extract' | 'scrape';
 export type RobotMode = 'normal' | 'bulk';
-export type Format = 'markdown' | 'html';
+export type Format = 'markdown' | 'html' | 'screenshot-visible' | 'screenshot-fullpage';
 export type RunStatus = 'running' | 'queued' | 'success' | 'failed' | 'aborting' | 'aborted';
 export type TimeUnit = 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
 

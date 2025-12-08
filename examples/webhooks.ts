@@ -4,7 +4,9 @@
  * This example demonstrates:
  * - Adding webhooks for robot events
  * - Configuring webhook events and headers
- * - Listing and removing webhooks
+ * - Getting webhook notifications when runs complete
+ *
+ * Site: Indie Hackers (https://www.indiehackers.com)
  */
 
 import 'dotenv/config';
@@ -13,41 +15,61 @@ import { MaxunExtract } from 'maxun-sdk';
 async function main() {
   const extractor = new MaxunExtract({
     apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL || 'http://localhost:5001/api/sdk'
+    baseUrl: process.env.MAXUN_BASE_URL!
   });
 
   try {
+    // Create a robot to extract Indie Hackers posts
     const robot = await extractor
-      .create('Webhook Demo')
-      .navigate('https://books.toscrape.com/')
+      .create('Indie Hackers Posts Monitor')
+      .navigate('https://www.indiehackers.com')
       .captureList({
-        selector: 'article.product_pod',
+        selector: '.feed-item',
         maxItems: 10
       });
 
     console.log(`Robot created: ${robot.id}`);
 
+    // Add webhook for notifications
     await robot.addWebhook({
       url: 'https://your-webhook-url.com/notifications',
       events: ['run.completed', 'run.failed'],
       headers: {
-        'Authorization': 'Bearer your-token',
-        'X-Custom-Header': 'value'
+        'Authorization': 'Bearer your-secret-token',
+        'X-Custom-Header': 'maxun-webhook'
       }
     });
 
-    console.log('\nWebhook added');
+    console.log('\n✓ Webhook added');
+    console.log('  URL: https://your-webhook-url.com/notifications');
+    console.log('  Events: run.completed, run.failed');
 
     const webhooks = robot.getWebhooks();
-    console.log(`Total webhooks: ${webhooks?.length || 0}`);
+    console.log(`\n✓ Total webhooks configured: ${webhooks?.length || 0}`);
 
-    // Run the robot - webhook will be triggered
+    // Run the robot - webhook will be triggered on completion
+    console.log('\nRunning robot...');
     const result = await robot.run();
-    console.log(`\nRun completed: ${result.runId}`);
-    console.log('Webhook notification sent');
 
+    console.log(`\n✓ Run completed: ${result.runId}`);
+    console.log(`  Status: ${result.status}`);
+    console.log(`  Items extracted: ${result.data.listData?.length || 0}`);
+    console.log('\n→ Webhook notification has been sent to your endpoint');
+
+    // Note: In production, you would NOT remove webhooks immediately
+    // This is just for demonstration purposes
     await robot.removeWebhooks();
-    console.log('\nWebhooks removed');
+    console.log('\n✓ Webhooks removed (for demo purposes)');
+
+    console.log('\n=== Webhook Payload Example ===');
+    console.log('{');
+    console.log('  "event": "run.completed",');
+    console.log('  "robotId": "robot_123",');
+    console.log('  "runId": "run_456",');
+    console.log('  "status": "success",');
+    console.log('  "data": { ... },');
+    console.log('  "timestamp": "2024-01-15T10:30:00Z"');
+    console.log('}');
 
   } catch (error: any) {
     console.error('Error:', error.message);

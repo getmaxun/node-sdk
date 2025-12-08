@@ -1,6 +1,23 @@
 # Maxun SDK
 
-Unified SDK for programmatic web automation and data extraction with Maxun.
+[![npm version](https://img.shields.io/npm/v/maxun-sdk.svg)](https://www.npmjs.com/package/maxun-sdk)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+
+The official Node.js SDK for [Maxun](https://maxun.dev) - turn any website into an API with just a few lines of code.
+
+**Works with both Maxun Cloud and Maxun Open Source** - automatically handles the differences for you.
+
+## What can you do with Maxun SDK?
+
+- 🎯 **Extract structured data** from any website using CSS selectors
+- 📝 **Scrape entire pages** as Markdown or HTML
+- 🤖 **Use AI to extract data** with natural language prompts
+- 📸 **Capture screenshots** (visible area or full page)
+- 🔄 **Automate workflows** with clicks, form fills, and navigation
+- ⏰ **Schedule recurring jobs** to keep your data fresh
+- 🔔 **Get webhooks** when extractions complete
+- 📊 **Handle pagination** automatically (scroll, click, load more)
 
 ## Installation
 
@@ -10,433 +27,356 @@ npm install maxun-sdk
 
 ## Quick Start
 
-```typescript
-import { MaxunExtract } from 'maxun-sdk';
+### Get Your API Key
 
-const extractor = new MaxunExtract({
-  apiKey: 'your-api-key',
-  baseUrl: 'https://app.maxun.dev/api/sdk'
-});
+**For Maxun Cloud:**
+1. Sign up at [maxun.dev](https://maxun.dev)
+2. Click on API Key → Generate API Key
 
-// Create and run an extraction
-const robot = await extractor
-  .create('Product Prices')
-  .navigate('https://example.com/products')
-  .captureList({
-    selector: '.product-card',
-    maxItems: 50
-  });
+**For Maxun Open Source:**
+1. Run Maxun locally following the [setup guide](https://github.com/getmaxun/maxun)
+2. Click on API Key → Generate API Key
 
-const result = await robot.run();
-console.log(result.data.listData);
-```
-
-## Features
-
-- **Web Automation**: Navigate, click, type, and interact with any website
-- **Data Extraction**: Extract text, lists, and structured data from web pages  
-- **LLM Integration**: Use AI to extract data with natural language prompts
-- **Scheduling**: Set up recurring data extraction jobs
-- **Webhooks**: Get notified when extractions complete
-- **Multiple Formats**: Export data as JSON, Markdown, or HTML
-
-## Main Classes
-
-### MaxunExtract
-For structured data extraction and list scraping:
+### Your First Extraction
 
 ```typescript
 import { MaxunExtract } from 'maxun-sdk';
 
-[![npm version](https://img.shields.io/npm/v/@maxun/extract.svg)](https://www.npmjs.com/package/@maxun/extract)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-Official SDKs for programmatic web data extraction with Maxun.
-
-## Packages
-
-- **[@maxun/extract](#maxunextract)** - Structured data extraction with workflows, form filling, and precise field selection
-- **[@maxun/scrape](#maxunscrape)** - Simple page scraping - just URL and format (markdown/HTML)
-- **[@maxun/core](#maxuncore)** - Core utilities (internal use)
-
-## Installation
-
-```bash
-# For structured data extraction
-npm install @maxun/extract
-
-# For automatic web scraping
-npm install @maxun/scrape
-
-# Or install both
-npm install @maxun/extract @maxun/scrape
-```
-
-## Quick Start
-
-### When to use which SDK?
-
-- **Use Extract SDK** when you need:
-  - Structured data extraction with specific fields
-  - Form filling and interactions (clicks, typing, navigation)
-  - Multi-step workflows with conditional logic
-  - Screenshots at specific points
-
-- **Use Scrape SDK** when you need:
-  - Quick, simple page scraping
-  - Entire page content in markdown or HTML format
-  - No interactions required - just URL and format
-
-### Extract SDK
-
-Extract specific fields from web pages with precision:
-
-```typescript
-import { MaxunExtract } from '@maxun/extract';
-
 const extractor = new MaxunExtract({
-  apiKey: process.env.MAXUN_API_KEY
+  apiKey: process.env.MAXUN_API_KEY,
+  baseUrl: 'https://app.maxun.dev/api/sdk' // or your self-hosted URL
 });
 
-// Create an extraction robot
+// Extract data from a product page
 const robot = await extractor
-  .create('Product Extractor')
-  .navigate('https://example.com/product')
+  .create('Product Scraper')
+  .navigate('https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html')
   .captureText({
-    title: '.product-title',
-    price: '.price',
-    description: '.description'
+    title: 'h1',
+    price: '.price_color',
+    availability: '.availability'
   });
 
-// Execute and get results
 const result = await robot.run();
 console.log(result.data.textData);
 ```
 
-### Scrape SDK
-
-Automatically scrape entire pages in markdown or HTML format:
+### Your First Page Scrape
 
 ```typescript
-import { MaxunScrape } from '@maxun/scrape';
+import { MaxunScrape } from 'maxun-sdk';
 
 const scraper = new MaxunScrape({
-  apiKey: process.env.MAXUN_API_KEY
+  apiKey: process.env.MAXUN_API_KEY,
+  baseUrl: 'https://app.maxun.dev/api/sdk' // or your self-hosted URL
 });
 
-// Create a scraping robot - just URL and formats!
+// Scrape a Wikipedia article as Markdown
 const robot = await scraper.create(
   'Wikipedia Scraper',
   'https://en.wikipedia.org/wiki/Web_scraping',
-  {
-    formats: ['markdown', 'html']
-  }
+  { formats: ['markdown'] }
 );
 
-// Execute and get results
 const result = await robot.run();
-console.log(result.data);
+console.log(result.data.markdown);
 ```
 
-## Getting Your API Key
+## Two Simple APIs for Different Use Cases
 
-1. Log in to your Maxun dashboard
-2. Navigate to Settings → API Keys
-3. Generate a new API key
-4. Store it securely in your environment variables
+### MaxunExtract - When You Need Specific Data
 
-## Documentation
+Use this when you want to extract **specific fields** from websites, interact with forms, or build multi-step workflows.
 
-### @maxun/extract
+```typescript
+import { MaxunExtract } from 'maxun-sdk';
 
-#### Basic Field Extraction
+const extractor = new MaxunExtract({
+  apiKey: process.env.MAXUN_API_KEY,
+  baseUrl: 'https://app.maxun.dev/api/sdk' // or your self-hosted URL
+});
+```
+
+**Perfect for:**
+- Extracting specific fields (prices, titles, descriptions)
+- Scraping lists with pagination
+- Filling forms and clicking buttons
+- Multi-step workflows (login → navigate → extract)
+- Taking screenshots at specific points
+
+### MaxunScrape - When You Want Everything
+
+Use this when you want to **capture entire pages** as Markdown, HTML, or screenshots. No CSS selectors needed!
+
+```typescript
+import { MaxunScrape } from 'maxun-sdk';
+
+const scraper = new MaxunScrape({
+  apiKey: process.env.MAXUN_API_KEY,
+  baseUrl: 'https://app.maxun.dev/api/sdk' // or your self-hosted URL
+});
+```
+
+**Perfect for:**
+- Converting web pages to Markdown
+- Archiving pages as HTML
+- Taking page screenshots
+- Simple one-step scraping
+
+## Common Use Cases
+
+### Extract Specific Fields
 
 ```typescript
 const robot = await extractor
-  .create('Blog Post Extractor')
-  .navigate('https://blog.example.com/post/123')
+  .create('GitHub Repo Stats')
+  .navigate('https://github.com/microsoft/typescript')
   .captureText({
-    title: 'h1.post-title',
-    author: '.author-name',
-    publishDate: 'time.publish-date',
-    content: '.post-content'
+    stars: 'span#repo-stars-counter-star',
+    forks: 'span#repo-network-counter',
+    description: 'p.f4'
   });
+
+const result = await robot.run();
 ```
 
-#### List Extraction with Pagination
+### Scrape a List with Pagination
 
 ```typescript
 const robot = await extractor
-  .create('Product List Extractor')
-  .navigate('https://example.com/products')
+  .create('Product List')
+  .navigate('https://books.toscrape.com/')
   .captureList({
-    selector: '.product-item',
+    selector: 'article.product_pod',
+    maxItems: 20,
     pagination: {
       type: 'clickNext',
-      selector: '.pagination-next'
-    },
-    maxItems: 50
+      selector: 'li.next a'
+    }
   });
+
+const result = await robot.run();
+console.log(result.data.listData); // Array of products
 ```
 
-**Key features:** 
-- Fields are automatically detected from the list selector - no need to manually specify field selectors!
-- By default, **all fields** are extracted with auto-generated names (Label 1, Label 2, etc.)
-- You can select **specific fields by index** using the `fields` parameter
-
-#### Selecting Specific Fields by Index
-
-To extract only certain fields and give them custom names:
+### Fill Forms and Click Buttons
 
 ```typescript
 const robot = await extractor
-  .create('Product List Extractor')
-  .navigate('https://example.com/products')
-  .captureList({
-    selector: '.product-item',
-    // Extract only fields at positions 1, 2, and 4 with custom names
-    fields: {
-      1: 'Product Name',
-      2: 'Price',
-      4: 'Rating'
-    },
-    maxItems: 50
-  });
-
-// Result data will use your custom field names:
-// [
-//   { productName: 'Product A', price: '$29.99', rating: '4.5' },
-//   { productName: 'Product B', price: '$39.99', rating: '4.8' },
-//   ...
-// ]
-```
-
-**Field indexing:**
-- Indexes are 1-based (1 = first field, 2 = second field, etc.)
-- Only specified fields are extracted
-- Each field gets the custom name you assign
-- Invalid indexes are skipped with a warning
-
-#### Advanced Workflow with Form Filling
-
-```typescript
-const robot = await extractor
-  .create('Advanced Extractor')
-  .navigate('https://example.com/login')
-  // Input types are automatically detected!
-  .type('#email', 'user@example.com')
-  .type('#password', 'password')
+  .create('Search and Extract')
+  .navigate('https://example.com/search')
+  .type('#search-input', 'web scraping')
   .click('button[type="submit"]')
-  .waitFor('.dashboard', 5000)
-  .navigate('https://example.com/data')
+  .waitFor('.results', 5000)
   .captureText({
-    userName: '.user-name',
-    balance: '.account-balance'
-  })
-  .captureScreenshot('dashboard');
+    title: 'h1.result-title',
+    description: 'p.result-desc'
+  });
 ```
 
-**Key features:**
-- Input types (text, number, email, password, date, etc.) are automatically detected
-- Values are securely encrypted during storage
-- `waitForLoadState` is automatically added after type actions for stability
-
-### @maxun/scrape
-
-The Scrape SDK provides the simplest possible API for page scraping - just specify a URL and output format.
-
-#### Basic Page Scraping
+### Convert Page to Markdown
 
 ```typescript
-// Scrape as Markdown (default)
 const robot = await scraper.create(
   'Article Scraper',
-  'https://example.com/article'
+  'https://news.ycombinator.com',
+  { formats: ['markdown'] }
 );
-// Formats defaults to ['markdown'] if not specified
+
+const result = await robot.run();
+console.log(result.data.markdown);
 ```
 
-#### Multiple Output Formats
+### Capture Screenshots
 
 ```typescript
-// Get both Markdown and HTML
+// Visible viewport only
 const robot = await scraper.create(
-  'Multi-Format Scraper',
-  'https://example.com/page',
+  'Screenshot',
+  'https://example.com',
+  { formats: ['screenshot-visible'] }
+);
+
+// Full page screenshot
+const robot = await scraper.create(
+  'Full Page Screenshot',
+  'https://example.com',
+  { formats: ['screenshot-fullpage'] }
+);
+```
+
+### Use AI to Extract Data
+
+No CSS selectors needed - just describe what you want in plain English!
+
+```typescript
+const robot = await extractor.extract(
+  'https://news.ycombinator.com',
   {
-    formats: ['markdown', 'html']
+    prompt: 'Extract the top 5 story titles and their scores',
+    llmProvider: 'anthropic', // or 'openai', 'ollama'
+    llmApiKey: process.env.ANTHROPIC_API_KEY,
+    llmModel: 'claude-3-5-sonnet-20241022'
   }
 );
+
+const result = await robot.run();
 ```
 
-#### HTML Only
+## Scheduling & Automation
+
+### Schedule Recurring Runs
 
 ```typescript
-// Scrape as HTML only
-const robot = await scraper.create(
-  'HTML Scraper',
-  'https://example.com/page',
-  {
-    formats: ['html']
-  }
-);
-```
-
-**Key features:**
-- No workflow needed - just URL and format
-- Automatically scrapes entire page content
-- Supports markdown and HTML output formats
-- Can request multiple formats simultaneously
-
-### Common Operations
-
-#### Scheduling
-
-```typescript
-// Schedule robot to run every hour
-// Simple schedule (with defaults)
+// Run every hour
 await robot.schedule({
   runEvery: 1,
   runEveryUnit: 'HOURS',
   timezone: 'America/New_York'
 });
 
-// Detailed schedule (business hours only)
-await robot.schedule({
-  runEvery: 2,
-  runEveryUnit: 'HOURS',
-  timezone: 'America/New_York',
-  startFrom: 'MONDAY',        // Optional: day of week
-  atTimeStart: '09:00',       // Optional: start time (HH:MM)
-  atTimeEnd: '17:00'          // Optional: end time (HH:MM)
-});
-
-// Weekly schedule
+// Run every Monday at 9 AM
 await robot.schedule({
   runEvery: 1,
   runEveryUnit: 'WEEKS',
   timezone: 'America/New_York',
-  startFrom: 'FRIDAY',
-  atTimeStart: '10:00',
-  atTimeEnd: '23:59'
+  startFrom: 'MONDAY',
+  atTimeStart: '09:00'
 });
 
-// Monthly schedule
-await robot.schedule({
-  runEvery: 1,
-  runEveryUnit: 'MONTHS',
-  timezone: 'America/New_York',
-  startFrom: 'SUNDAY',
-  dayOfMonth: 1,              // Optional: day of month (1-31)
-  atTimeStart: '00:00',
-  atTimeEnd: '23:59'
-});
-
-// Get schedule info
+// Check when it runs next
 const schedule = robot.getSchedule();
 console.log(schedule?.nextRunAt);
 
-// Remove schedule
+// Stop the schedule
 await robot.unschedule();
 ```
 
-#### Webhooks
+### Get Webhooks When Jobs Complete
 
 ```typescript
-// Add webhook for notifications
 await robot.addWebhook({
   url: 'https://your-app.com/webhook',
   events: ['run.completed', 'run.failed'],
   headers: {
-    'Authorization': 'Bearer your-token'
+    'Authorization': 'Bearer your-secret-token'
   }
 });
 ```
 
-#### Managing Runs
+## Working with Robots
+
+### List All Your Robots
+
+```typescript
+const robots = await extractor.getRobots();
+robots.forEach(robot => {
+  console.log(robot.id, robot.recording_meta.name);
+});
+```
+
+### Get a Specific Robot
+
+```typescript
+const robot = await extractor.getRobot('robot_123');
+console.log(robot.recording_meta.name);
+```
+
+### View Run History
 
 ```typescript
 // Get all runs
 const runs = await robot.getRuns();
 
-// Get latest run
+// Get the latest run
 const latestRun = await robot.getLatestRun();
+console.log(latestRun.status, latestRun.data);
 
-// Get specific run
+// Get a specific run
 const run = await robot.getRun('run_123');
-
-// Abort a running task
-await robot.abort('run_123');
 ```
 
-#### Managing Robots
+### Delete a Robot
 
 ```typescript
-// List all robots
-const robots = await extractor.getRobots();
-
-// Get specific robot
-const robot = await extractor.getRobot('robot_123');
-
-// Delete robot
 await extractor.deleteRobot('robot_123');
 // or
 await robot.delete();
-
-// Refresh robot data
-await robot.refresh();
 ```
 
-## Examples
+## Advanced Features
 
-See the [examples](./examples) directory for complete working examples:
-
-- [Basic Extraction](./examples/basic-extraction.ts) - Simple field extraction
-- [Form Fill & Screenshot](./examples/form-fill-screenshot.ts) - Form filling with automatic input type detection
-- [Chained Extraction](./examples/chained-extract.ts) - Multi-page workflows
-- [Simple Scraping](./examples/simple-scrape.ts) - Basic page scraping with format selection
-
-## API Reference
-
-### Configuration
+### Pagination Strategies
 
 ```typescript
-interface MaxunConfig {
-  apiKey: string;
-  baseUrl?: string; // Optional, defaults to production API
-}
+// Click "Next" button
+captureList({
+  selector: '.item',
+  pagination: { type: 'clickNext', selector: '.next-btn' }
+})
+
+// Infinite scroll
+captureList({
+  selector: '.item',
+  pagination: { type: 'scrollDown' }
+})
+
+// Click "Load More" button
+captureList({
+  selector: '.item',
+  pagination: { type: 'clickLoadMore', selector: '.load-more' }
+})
 ```
 
-### Execution Options
+### Select Specific Fields from Lists
+
+By default, all fields are extracted. You can select only the ones you need:
 
 ```typescript
-interface ExecutionOptions {
-  params?: Record<string, any>;    // Custom parameters
-  webhook?: WebhookConfig;         // One-time webhook
-  timeout?: number;                // Execution timeout (ms)
-  waitForCompletion?: boolean;     // Wait for results (default: true)
-}
+const robot = await extractor
+  .create('Product List')
+  .navigate('https://example.com/products')
+  .captureList({
+    selector: '.product',
+    fields: {
+      1: 'productName',  // First field → productName
+      2: 'price',        // Second field → price
+      4: 'rating'        // Fourth field → rating
+    },
+    maxItems: 50
+  });
 ```
 
-### Results
+### Take Screenshots During Workflows
 
 ```typescript
-interface RunResult {
-  data: {
-    textData?: Record<string, any>;      // Extracted fields
-    listData?: Record<string, any>[];    // Extracted lists
-  };
-  screenshots?: string[];                 // Screenshot URLs
-  status: RunStatus;
-  runId: string;
-}
+const robot = await extractor
+  .create('Screenshot Workflow')
+  .navigate('https://example.com')
+  .captureScreenshot('homepage', { fullPage: true })
+  .click('.menu-item')
+  .captureScreenshot('menu-opened', { fullPage: false });
+
+const result = await robot.run();
+console.log(result.screenshots); // Array of screenshot URLs
+```
+
+### Custom Execution Options
+
+```typescript
+const result = await robot.run({
+  timeout: 120000,           // 2 minutes
+  params: { customField: 'value' },
+  webhook: {                 // One-time webhook for this run
+    url: 'https://example.com/webhook'
+  }
+});
 ```
 
 ## Error Handling
 
 ```typescript
-import { MaxunError } from '@maxun/extract';
+import { MaxunError } from 'maxun-sdk';
 
 try {
   const result = await robot.run();
@@ -454,56 +394,188 @@ try {
 
 ## TypeScript Support
 
-Both SDKs are written in TypeScript and provide full type definitions out of the box.
+The SDK is written in TypeScript and includes complete type definitions:
+
+```typescript
+import {
+  MaxunExtract,
+  MaxunScrape,
+  Robot,
+  RunResult,
+  MaxunError,
+  ScheduleConfig,
+  WebhookConfig
+} from 'maxun-sdk';
+```
+
+## API Reference
+
+### MaxunExtract Methods
+
+| Method | Description |
+|--------|-------------|
+| `create(name)` | Start building a new extraction robot |
+| `navigate(url)` | Navigate to a URL |
+| `captureText(fields)` | Extract specific text fields using CSS selectors |
+| `captureList(config)` | Extract lists with optional pagination |
+| `click(selector)` | Click an element |
+| `type(selector, text)` | Type into an input field (auto-detects input type) |
+| `waitFor(selector, timeout?)` | Wait for element to appear |
+| `wait(milliseconds)` | Wait for a specific duration |
+| `captureScreenshot(name?, options?)` | Take a screenshot |
+| `extract(url, options)` | AI-powered extraction using natural language |
+| `getRobots()` | List all robots |
+| `getRobot(id)` | Get a specific robot |
+| `deleteRobot(id)` | Delete a robot |
+
+### MaxunScrape Methods
+
+| Method | Description |
+|--------|-------------|
+| `create(name, url, options?)` | Create a scraping robot |
+
+### Robot Methods
+
+| Method | Description |
+|--------|-------------|
+| `run(options?)` | Execute the robot and get results |
+| `schedule(config)` | Schedule periodic execution |
+| `unschedule()` | Remove schedule |
+| `getSchedule()` | Get current schedule info |
+| `addWebhook(config)` | Add a webhook |
+| `getRuns()` | Get all runs |
+| `getLatestRun()` | Get the most recent run |
+| `getRun(runId)` | Get a specific run |
+| `abort(runId)` | Stop a running execution |
+| `delete()` | Delete this robot |
+| `refresh()` | Reload robot data from server |
+
+### Configuration Types
+
+```typescript
+interface MaxunConfig {
+  apiKey: string;
+  baseUrl: string; // Required - e.g., 'https://app.maxun.dev/api/sdk' or 'http://localhost:8080/api/sdk'
+}
+
+interface ScheduleConfig {
+  runEvery: number;
+  runEveryUnit: 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
+  timezone: string; // e.g., 'America/New_York'
+  startFrom?: 'MONDAY' | 'TUESDAY' | ... | 'SUNDAY';
+  dayOfMonth?: number; // 1-31
+  atTimeStart?: string; // HH:MM format
+  atTimeEnd?: string;   // HH:MM format
+}
+
+interface WebhookConfig {
+  url: string;
+  events?: string[]; // Default: ['run.completed', 'run.failed']
+  headers?: Record<string, string>;
+}
+
+interface RunResult {
+  data: {
+    textData?: Record<string, any>;
+    listData?: Array<Record<string, any>>;
+    markdown?: string;
+    html?: string;
+  };
+  screenshots?: string[];
+  status: 'success' | 'failed' | 'running' | 'queued';
+  runId: string;
+}
+```
+
+## Examples
+
+Check out the [examples](./examples) directory for complete working examples:
+
+| Example | What it does |
+|---------|-------------|
+| [basic-extraction.ts](./examples/basic-extraction.ts) | Extract fields from a single page |
+| [list-pagination.ts](./examples/list-pagination.ts) | Scrape lists with different pagination strategies |
+| [form-fill-screenshot.ts](./examples/form-fill-screenshot.ts) | Fill forms and capture screenshots |
+| [chained-extract.ts](./examples/chained-extract.ts) | Multi-page workflow (navigate → extract → navigate) |
+| [simple-scrape.ts](./examples/simple-scrape.ts) | Convert pages to Markdown/HTML |
+| [llm-extraction.ts](./examples/llm-extraction.ts) | AI-powered extraction with natural language |
+| [scheduling.ts](./examples/scheduling.ts) | Set up recurring jobs |
+| [webhooks.ts](./examples/webhooks.ts) | Configure webhook notifications |
+| [robot-management.ts](./examples/robot-management.ts) | CRUD operations for robots |
+| [complete-workflow.ts](./examples/complete-workflow.ts) | Production-ready example combining features |
 
 ## Troubleshooting
 
-### Common Issues
+### "Invalid API key" or "API key is missing"
 
-**"API key is missing" or "Invalid API key"**
-- Ensure `MAXUN_API_KEY` environment variable is set
-- Verify the API key is correct in your Maxun dashboard
+Make sure your API key is set:
+```bash
+export MAXUN_API_KEY="your-api-key-here"
+```
 
-**"Connection refused" or network errors**
-- Check that your backend server is running
-- Verify the `baseUrl` points to the correct endpoint
-- Default: `http://localhost:5001/api/sdk` for local development
+Or use a `.env` file:
+```
+MAXUN_API_KEY=your-api-key-here
+MAXUN_BASE_URL=https://app.maxun.dev/api/sdk
+```
 
-**Robot execution fails**
-- Verify the target URL is accessible
-- Check CSS selectors are valid
-- Review backend logs for detailed error messages
+### "Connection refused" or network errors
 
-**TypeScript import errors**
-- Run `npm run build` in the SDK directory
-- Ensure packages are properly installed
-- Check `tsconfig.json` settings
+- For **Maxun Cloud**: Set `baseUrl: 'https://app.maxun.dev/api/sdk'`
+- For **Maxun Open Source**: Make sure your server is running and set `baseUrl: 'http://localhost:8080/api/sdk'` (or your custom port)
 
-**Scheduling not working**
-- Verify backend pgBoss is configured
-- Check timezone is valid (e.g., 'America/New_York')
-- Ensure schedule parameters are correct
+### Robot execution fails
 
-### Getting Help
+- **Check the URL** - Make sure it's accessible
+- **Verify selectors** - Use browser DevTools to test your CSS selectors
+- **Check the logs** - Look at backend logs for detailed error messages
+- **Try waitFor()** - Some elements need time to load
 
-If you encounter issues not covered here:
+### TypeScript errors
 
-1. Check the [examples](./examples) directory for working code
-2. Review error messages and backend logs
-3. Search [GitHub Issues](https://github.com/maxun-dev/maxun-sdks/issues)
-4. Contact support (details below)
+```bash
+# Rebuild the SDK if you installed from source
+npm run build
 
-## Support
+# Make sure types are installed
+npm install --save-dev @types/node
+```
 
-- **Documentation**: [https://docs.maxun.dev](https://docs.maxun.dev)
-- **GitHub Issues**: [https://github.com/maxun-dev/maxun-sdks/issues](https://github.com/maxun-dev/maxun-sdks/issues)
-- **Email**: support@maxun.dev
-- **Community**: Join our Discord for discussions and help
+### Need more help?
+
+- 📖 **Documentation**: [docs.maxun.dev](https://docs.maxun.dev)
+- 💬 **Discord Community**: [Join our Discord](https://discord.gg/maxun)
+- 🐛 **GitHub Issues**: [Report a bug](https://github.com/getmaxun/maxun-sdks/issues)
+- 📧 **Email**: support@maxun.dev
 
 ## Contributing
 
-We welcome contributions! Please see our contributing guidelines and submit pull requests to our GitHub repository.
+We welcome contributions! Here's how:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests (when available)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
 
 ## License
 
-MIT
+This project is licensed under [AGPLv3](./LICENSE).
+
+## Support Us
+
+Star the repository, contribute if you love what we're building, or [sponsor us](https://github.com/sponsors/amhsirak).
+
+## Contributors
+
+Thank you to the combined efforts of everyone who contributes!
+
+<a href="https://github.com/getmaxun/maxun-sdks/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=getmaxun/maxun-sdks" />
+</a>
+
+---
+
+**Built with ❤️ by the Maxun team**

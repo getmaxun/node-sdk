@@ -89,8 +89,18 @@ export class MaxunClient {
     const httpAgent = new http.Agent({ keepAlive: false });
     const httpsAgent = new https.Agent({ keepAlive: false });
 
-    const response = await this.axios.post<ApiResponse<RobotData>>('/robots', workflowFile, {
-      timeout: 120000, // 2 minutes for enrichment process
+    const robotTypeValue = (workflowFile.meta as any)?.robotType || (workflowFile.meta as any)?.type;
+    const payload = {
+      ...workflowFile,
+      meta: {
+        ...workflowFile.meta,
+        type: robotTypeValue, 
+        robotType: robotTypeValue,
+      }
+    };
+
+    const response = await this.axios.post<ApiResponse<RobotData>>('/robots', payload, {
+      timeout: 120000,
       httpAgent,
       httpsAgent,
     });
@@ -253,29 +263,6 @@ export class MaxunClient {
 
     if (!response.data.data) {
       throw new MaxunError('Failed to extract data with LLM');
-    }
-
-    return response.data.data;
-  }
-
-  /**
-   * Preview list extraction fields before saving
-   */
-  async previewListFields(url: string, selector: string, sampleSize: number = 2): Promise<any> {
-    const response = await this.axios.post<ApiResponse<any>>(
-      '/extract/preview-list',
-      {
-        url,
-        selector,
-        sampleSize,
-      },
-      {
-        timeout: 60000,
-      }
-    );
-
-    if (!response.data.data) {
-      throw new MaxunError('Failed to preview list fields');
     }
 
     return response.data.data;
