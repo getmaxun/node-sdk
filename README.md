@@ -496,13 +496,13 @@ Check out the [examples](./examples) directory for complete working examples:
 | [basic-extraction.ts](./examples/basic-extraction.ts) | Extract fields from a single page |
 | [list-pagination.ts](./examples/list-pagination.ts) | Scrape lists with different pagination strategies |
 | [form-fill-screenshot.ts](./examples/form-fill-screenshot.ts) | Fill forms and capture screenshots |
-| [chained-extract.ts](./examples/chained-extract.ts) | Multi-page workflow (navigate → extract → navigate) |
-| [simple-scrape.ts](./examples/simple-scrape.ts) | Convert pages to Markdown/HTML |
+| [chained-extract.ts](./examples/chained-extract.ts) | Execute multiple capture actions with one robot |
+| [simple-scrape.ts](./examples/simple-scrape.ts) | Convert pages to Markdown/HTML/Screenshots |
 | [llm-extraction.ts](./examples/llm-extraction.ts) | AI-powered extraction with natural language |
-| [scheduling.ts](./examples/scheduling.ts) | Set up recurring jobs |
+| [scheduling.ts](./examples/scheduling.ts) | Set up robot schedules to execute runs |
 | [webhooks.ts](./examples/webhooks.ts) | Configure webhook notifications |
 | [robot-management.ts](./examples/robot-management.ts) | CRUD operations for robots |
-| [complete-workflow.ts](./examples/complete-workflow.ts) | Production-ready example combining features |
+| [complete-workflow.ts](./examples/complete-workflow.ts) | Create a robot combining multiple features |
 
 ## Troubleshooting
 
@@ -545,7 +545,7 @@ npm install --save-dev @types/node
 
 - 📖 **Documentation**: [docs.maxun.dev](https://docs.maxun.dev)
 - 💬 **Discord Community**: [Join our Discord](https://discord.gg/maxun)
-- 🐛 **GitHub Issues**: [Report a bug](https://github.com/getmaxun/maxun-sdks/issues)
+- 🐛 **GitHub Issues**: [Report a bug](https://github.com/getmaxun/node-sdk/issues)
 - 📧 **Email**: support@maxun.dev
 
 ## Contributing
