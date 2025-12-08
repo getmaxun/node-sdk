@@ -13,7 +13,7 @@ import { MaxunExtract } from 'maxun-sdk';
 async function main() {
   const extractor = new MaxunExtract({
     apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL || 'http://localhost:5001/api/sdk'
+    baseUrl: process.env.MAXUN_BASE_URL
   });
 
   try {

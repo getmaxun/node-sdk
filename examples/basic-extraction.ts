@@ -5,6 +5,8 @@
  * - Creating a robot with captureText
  * - Extracting specific fields from a single page
  * - Running the robot and retrieving results
+ *
+ * Site: Hacker News (https://news.ycombinator.com)
  */
 
 import 'dotenv/config';
@@ -13,25 +15,26 @@ import { MaxunExtract } from 'maxun-sdk';
 async function main() {
   const extractor = new MaxunExtract({
     apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL || 'http://localhost:5001/api/sdk'
+    baseUrl: process.env.MAXUN_BASE_URL!
   });
 
   try {
+    // Extract top story from Hacker News
     const robot = await extractor
-      .create('Product Details Extractor')
-      .navigate('https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html')
+      .create('Hacker News Top Story')
+      .navigate('https://news.ycombinator.com')
       .captureText({
-        title: 'h1',
-        price: '.price_color',
-        availability: '.availability',
-        description: '#product_description + p'
+        Title: 'tr.athing:first-child .titleline > a',
+        Points: 'tr.athing:first-child + tr .score',
+        Author: 'tr.athing:first-child + tr .hnuser',
+        Posted: 'tr.athing:first-child + tr a:last-child'
       });
 
     console.log(`Robot created: ${robot.id}`);
 
     const result = await robot.run();
 
-    console.log('\nExtracted data:');
+    console.log('\nExtracted Hacker News Top Story:');
     console.log(JSON.stringify(result.data.textData, null, 2));
 
   } catch (error: any) {

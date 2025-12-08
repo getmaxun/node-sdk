@@ -90,17 +90,18 @@ npx tsx examples/list-pagination.ts
 - Click "Load More" button pagination
 - Limit extraction to specific number of items
 
-#### 6. Smart List Extraction
-Extract lists with specific fields and pagination:
+#### 6. LLM-based Extraction
+Use natural language prompts to create extraction robots:
 ```bash
 npx tsx examples/llm-extraction.ts
 ```
 
 **What it does:**
-- Extracts lists with automatic pagination
-- Demonstrates field extraction from list items
-- Shows max items limiting
-- Clean list extraction example
+- Generate extraction workflows using natural language prompts
+- LLM automatically determines what data to extract
+- Support for multiple providers: Ollama (local), Anthropic, OpenAI
+- Creates a reusable robot from the generated workflow
+- No need to write selectors manually
 
 ### Robot Management
 

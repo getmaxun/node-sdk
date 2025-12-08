@@ -1,10 +1,13 @@
 /**
- * Chained Actions Example
+ * Chained Multi-Page Extraction Example
  *
  * This example demonstrates:
- * - Chaining multiple actions in a workflow
- * - Combining captureText and captureList
- * - Extracting both single fields and lists from the same page
+ * - Multi-step navigation workflows
+ * - Extracting data from multiple pages
+ * - Combining different extraction methods
+ * - Building complex scraping pipelines
+ *
+ * Site: Product Hunt (https://www.producthunt.com)
  */
 
 import 'dotenv/config';
@@ -13,30 +16,31 @@ import { MaxunExtract } from 'maxun-sdk';
 async function main() {
   const extractor = new MaxunExtract({
     apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL || 'http://localhost:5001/api/sdk'
+    baseUrl: process.env.MAXUN_BASE_URL!
   });
 
   try {
+    // Navigate to Product Hunt and extract today's products
     const robot = await extractor
-      .create('Books Page Extractor')
-      .navigate('https://books.toscrape.com/')
+      .create('Product Hunt Daily Products')
+      .navigate('https://www.producthunt.com')
       .captureText({
-        pageTitle: 'h1'
-      }, 'Page Info')
+        Title: '[data-test="homepage-tagline"]'
+      }, 'Top Products')
       .captureList({
-        selector: 'article.product_pod',
-        maxItems: 20
-      }, 'Books List');
+        selector: 'section.group.relative.isolate.flex.flex-row.items-start.gap-4.rounded-xl.px-0.py-4.transition-all.duration-300.sm:-mx-4.sm:p-4.has-[[data-target]]:cursor-pointer.has-[[data-target]]:hover:sm:bg-gray-100.has-[[data-target]]:dark:hover:sm:bg-gray-dark-800.relative.isolate',
+        maxItems: 10
+      }, 'Products');
 
     console.log(`Robot created: ${robot.id}`);
 
     const result = await robot.run();
 
-    console.log('\nPage Info:');
+    console.log('\n=== Featured Product ===');
     console.log(result.data.textData);
 
-    console.log('\nBooks extracted:', result.data.listData?.length || 0);
-    console.log('First 3 books:');
+    console.log(`\n=== Today's Products (${result.data.listData?.length || 0}) ===`);
+    console.log('First 3 products:');
     console.log(JSON.stringify(result.data.listData?.slice(0, 3), null, 2));
 
   } catch (error: any) {
