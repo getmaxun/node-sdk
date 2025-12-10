@@ -1,5 +1,5 @@
 /**
- * MaxunScrape - Main class for the Scrape SDK
+ * Scrape - Main class for the Scrape SDK
  */
 
 import { Client } from './client/maxun-client';
@@ -20,7 +20,7 @@ export interface ScrapeOptions {
   formats?: Format[];
 }
 
-export class MaxunScrape {
+export class Scrape {
   private client: Client;
 
   constructor(config: Config) {

@@ -11,10 +11,10 @@
  */
 
 import 'dotenv/config';
-import { MaxunScrape } from 'maxun-sdk';
+import { Scrape } from 'maxun-sdk';
 
 async function main() {
-  const scraper = new MaxunScrape({
+  const scraper = new Scrape({
     apiKey: process.env.MAXUN_API_KEY!,
     baseUrl: process.env.MAXUN_BASE_URL!
   });

@@ -6,7 +6,7 @@
 
 // Main classes
 export { Extract } from './extract';
-export { MaxunScrape } from './scrape';
+export { Scrape } from './scrape';
 export { Robot } from './robot/robot';
 export { Client } from './client/maxun-client';
 
