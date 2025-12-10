@@ -2,7 +2,7 @@
  * MaxunScrape - Main class for the Scrape SDK
  */
 
-import { MaxunClient } from './client/maxun-client';
+import { Client } from './client/maxun-client';
 import { MaxunConfig, WorkflowFile, RobotData, Format } from './types';
 import { WorkflowBuilder } from './builders/workflow-builder';
 import { Robot } from './robot/robot';
@@ -21,10 +21,10 @@ export interface ScrapeOptions {
 }
 
 export class MaxunScrape {
-  private client: MaxunClient;
+  private client: Client;
 
   constructor(config: MaxunConfig) {
-    this.client = new MaxunClient(config);
+    this.client = new Client(config);
   }
 
   /**

@@ -19,7 +19,7 @@ import {
   ExecutionOptions,
 } from '../types';
 
-export class MaxunClient {
+export class Client {
   private axios: AxiosInstance;
   private apiKey: string;
 

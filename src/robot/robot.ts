@@ -3,13 +3,13 @@
  */
 
 import { RunResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run } from '../types';
-import { MaxunClient } from '../client/maxun-client';
+import { Client } from '../client/maxun-client';
 
 export class Robot {
-  protected client: MaxunClient;
+  protected client: Client;
   protected robotData: RobotData;
 
-  constructor(client: MaxunClient, robotData: RobotData) {
+  constructor(client: Client, robotData: RobotData) {
     this.client = client;
     this.robotData = robotData;
   }

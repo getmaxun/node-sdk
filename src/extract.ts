@@ -2,16 +2,16 @@
  * Extract - Main class for the Extract SDK
  */
 
-import { MaxunClient } from './client/maxun-client';
+import { Client } from './client/maxun-client';
 import { MaxunConfig, WorkflowFile, RobotData } from './types';
 import { ExtractBuilder } from './builders/extract-builder';
 import { Robot } from './robot/robot';
 
 export class Extract {
-  public client: MaxunClient;
+  public client: Client;
 
   constructor(config: MaxunConfig) {
-    this.client = new MaxunClient(config);
+    this.client = new Client(config);
   }
 
   /**
