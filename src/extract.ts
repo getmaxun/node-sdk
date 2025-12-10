@@ -1,5 +1,5 @@
 /**
- * MaxunExtract - Main class for the Extract SDK
+ * Extract - Main class for the Extract SDK
  */
 
 import { MaxunClient } from './client/maxun-client';
@@ -7,7 +7,7 @@ import { MaxunConfig, WorkflowFile, RobotData } from './types';
 import { ExtractBuilder } from './builders/extract-builder';
 import { Robot } from './robot/robot';
 
-export class MaxunExtract {
+export class Extract {
   public client: MaxunClient;
 
   constructor(config: MaxunConfig) {
