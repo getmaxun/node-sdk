@@ -3,7 +3,7 @@
  */
 
 import { Client } from './client/maxun-client';
-import { MaxunConfig, WorkflowFile, RobotData, Format } from './types';
+import { Config, WorkflowFile, RobotData, Format } from './types';
 import { WorkflowBuilder } from './builders/workflow-builder';
 import { Robot } from './robot/robot';
 
@@ -23,7 +23,7 @@ export interface ScrapeOptions {
 export class MaxunScrape {
   private client: Client;
 
-  constructor(config: MaxunConfig) {
+  constructor(config: Config) {
     this.client = new Client(config);
   }
 

@@ -3,14 +3,14 @@
  */
 
 import { Client } from './client/maxun-client';
-import { MaxunConfig, WorkflowFile, RobotData } from './types';
+import { Config, WorkflowFile, RobotData } from './types';
 import { ExtractBuilder } from './builders/extract-builder';
 import { Robot } from './robot/robot';
 
 export class Extract {
   public client: Client;
 
-  constructor(config: MaxunConfig) {
+  constructor(config: Config) {
     this.client = new Client(config);
   }
 

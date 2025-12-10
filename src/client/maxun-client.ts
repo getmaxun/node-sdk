@@ -7,7 +7,7 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import http from 'http';
 import https from 'https';
 import {
-  MaxunConfig,
+  Config,
   RobotData,
   Run,
   ApiResponse,
@@ -23,7 +23,7 @@ export class Client {
   private axios: AxiosInstance;
   private apiKey: string;
 
-  constructor(config: MaxunConfig) {
+  constructor(config: Config) {
     this.apiKey = config.apiKey;
 
     this.axios = axios.create({
