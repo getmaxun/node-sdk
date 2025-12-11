@@ -4,11 +4,11 @@
 
 import { WorkflowBuilder } from './workflow-builder';
 import { ExtractListConfig, PaginationConfig, ExtractFields } from '../types';
-import type { MaxunExtract } from '../extract';
+import type { Extract } from '../extract';
 import type { Robot } from '../robot/robot';
 
 export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot> {
-  private extractor!: MaxunExtract; // Will be set by MaxunExtract
+  private extractor!: Extract; // Will be set by Extract
 
   constructor(name: string) {
     super(name, 'extract');

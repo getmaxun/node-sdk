@@ -10,10 +10,10 @@
  */
 
 import 'dotenv/config';
-import { MaxunExtract } from 'maxun-sdk';
+import { Extract } from 'maxun-sdk';
 
 async function main() {
-  const extractor = new MaxunExtract({
+  const extractor = new Extract({
     apiKey: process.env.MAXUN_API_KEY!,
     baseUrl: process.env.MAXUN_BASE_URL
   });

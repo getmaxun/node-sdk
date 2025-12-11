@@ -5,10 +5,10 @@
  */
 
 // Main classes
-export { MaxunExtract } from './extract';
-export { MaxunScrape } from './scrape';
+export { Extract } from './extract';
+export { Scrape } from './scrape';
 export { Robot } from './robot/robot';
-export { MaxunClient } from './client/maxun-client';
+export { Client } from './client/maxun-client';
 
 // All types
 export * from './types';

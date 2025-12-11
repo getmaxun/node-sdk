@@ -103,7 +103,7 @@ export interface WebhookConfig {
   headers?: Record<string, string>;
 }
 
-export interface MaxunConfig {
+export interface Config {
   apiKey: string;
   baseUrl?: string;
 }
