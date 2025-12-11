@@ -2,16 +2,39 @@
 
 The official Node.js SDK for [Maxun](https://maxun.dev) - turn any website into an API.
 
-## Installation
+Works with both Maxun Cloud and Maxun Open Source - automatically handles the differences for you.
 
-```bash
-npm install maxun-sdk
-```
+## What can you do with Maxun SDK?
 
-## Get Your API Key
+- **Extract structured data** from any website 
+- **Scrape entire pages** as Markdown or HTML
+- **Use AI to extract data** with natural language prompts
+- **Capture screenshots** (visible area or full page)
+- **Automate workflows** with clicks, form fills, and navigation
+- **Schedule recurring jobs** to keep your data fresh
+- **Get webhooks** when extractions complete
+- **Handle pagination** automatically (scroll, click, load more)
 
-1. Sign up at [maxun.dev](https://app.maxun.dev) 
-2. Click on API Key → Generate API Key
+## Quick Start
+Follow the quick-start guide here: https://docs.maxun.dev/sdk/sdk-overview
+
+## Table of Contents
+
+1. [Extract Robots](https://docs.maxun.dev/sdk/sdk-extract)
+   - [LLM Extraction (Beta)](https://docs.maxun.dev/sdk/sdk-extract#llm-extraction-beta)
+   - [Non-LLM Extraction](https://docs.maxun.dev/sdk/sdk-extract#non-llm-extraction)
+   - [Auto Pagination](https://docs.maxun.dev/sdk/sdk-extract#2-auto-pagination-optional)
+   - [Auto List Capture](https://docs.maxun.dev/sdk/sdk-extract#1-auto-list-capture)
+
+2. [Scrape Robots](https://docs.maxun.dev/sdk/sdk-scrape)
+
+3. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
+   - [Scheduling](https://docs.maxun.dev/sdk/sdk-robot#scheduling)
+   - [Webhooks](https://docs.maxun.dev/sdk/sdk-robot#webhooks)
+   - [Runs](https://docs.maxun.dev/sdk/sdk-robot#running-robots)
+   - [Error Handling](https://docs.maxun.dev/sdk/sdk-robot#error-handling)
+   - [Execution History](https://docs.maxun.dev/sdk/sdk-robot#execution-history)
+
 
 ## Examples
 
@@ -30,6 +53,3 @@ Check out the [examples](./examples) directory for complete working examples:
 | [robot-management.ts](./examples/robot-management.ts) | CRUD operations for robots |
 | [complete-workflow.ts](./examples/complete-workflow.ts) | Create a robot combining multiple features |
 
-## License
-
-This project is licensed under MIT.
