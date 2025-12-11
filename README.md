@@ -4,6 +4,9 @@ The official Node.js SDK for [Maxun](https://maxun.dev) - turn any website into 
 
 Works with both Maxun Cloud and Maxun Open Source - automatically handles the differences for you.
 
+https://github.com/user-attachments/assets/71a6f10b-5b2a-45dd-9ef7-53d0bcf2b76d
+
+
 ## What can you do with Maxun SDK?
 
 - **Extract structured data** from any website 
