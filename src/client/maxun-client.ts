@@ -17,6 +17,7 @@ import {
   MaxunError,
   WorkflowFile,
   ExecutionOptions,
+  CrawlOptions,
 } from '../types';
 
 export class Client {
@@ -263,6 +264,26 @@ export class Client {
 
     if (!response.data.data) {
       throw new MaxunError('Failed to extract data with LLM');
+    }
+
+    return response.data.data;
+  }
+
+  /**
+   * Create a crawl robot to discover and scrape multiple pages
+   */
+  async createCrawlRobot(url: string, options: CrawlOptions): Promise<RobotData> {
+    const response = await this.axios.post<ApiResponse<RobotData>>(
+      '/crawl',
+      {
+        url,
+        name: options.name,
+        crawlConfig: options.crawlConfig,
+      }
+    );
+
+    if (!response.data.data) {
+      throw new MaxunError('Failed to create crawl robot');
     }
 
     return response.data.data;

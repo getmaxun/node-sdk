@@ -6,11 +6,12 @@
 // Core Types
 // ======================
 
-export type RobotType = 'extract' | 'scrape';
+export type RobotType = 'extract' | 'scrape' | 'crawl' | 'search';
 export type RobotMode = 'normal' | 'bulk';
 export type Format = 'markdown' | 'html' | 'screenshot-visible' | 'screenshot-fullpage';
 export type RunStatus = 'running' | 'queued' | 'success' | 'failed' | 'aborting' | 'aborted';
 export type TimeUnit = 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
+export type CrawlMode = 'domain' | 'subdomain' | 'path';
 
 export interface RobotMeta {
   name: string;
@@ -118,6 +119,7 @@ export interface RunResult {
   data: {
     textData?: Record<string, any>;
     listData?: Record<string, any>[];
+    crawlData?: any[];
     markdown?: string;
     html?: string;
     binaryOutput?: Record<string, string>;
@@ -190,4 +192,24 @@ export interface LLMResponse {
     completionTokens: number;
     totalTokens: number;
   };
+}
+
+// ======================
+// Crawl-specific Types
+// ======================
+
+export interface CrawlConfig {
+  mode: CrawlMode;
+  includePaths?: string[];
+  excludePaths?: string[];
+  limit?: number;
+  maxDepth?: number;
+  respectRobots?: boolean;
+  useSitemap?: boolean;
+  followLinks?: boolean;
+}
+
+export interface CrawlOptions {
+  name?: string;
+  crawlConfig: CrawlConfig;
 }

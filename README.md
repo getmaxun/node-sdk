@@ -6,8 +6,9 @@ Works with both Maxun Cloud and Maxun Open Source - automatically handles the di
 
 ## What can you do with Maxun SDK?
 
-- **Extract structured data** from any website 
+- **Extract structured data** from any website
 - **Scrape entire pages** as Markdown or HTML
+- **Crawl multiple pages** automatically to discover and scrape content
 - **Use AI to extract data** with natural language prompts
 - **Capture screenshots** (visible area or full page)
 - **Automate workflows** with clicks, form fills, and navigation
@@ -28,7 +29,9 @@ Follow the quick-start guide here: https://docs.maxun.dev/sdk/sdk-overview
 
 2. [Scrape Robots](https://docs.maxun.dev/sdk/sdk-scrape)
 
-3. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
+3. [Crawl Robots](https://docs.maxun.dev/sdk/sdk-crawl)
+
+4. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
    - [Scheduling](https://docs.maxun.dev/sdk/sdk-robot#scheduling)
    - [Webhooks](https://docs.maxun.dev/sdk/sdk-robot#webhooks)
    - [Runs](https://docs.maxun.dev/sdk/sdk-robot#running-robots)
@@ -47,6 +50,7 @@ Check out the [examples](./examples) directory for complete working examples:
 | [form-fill-screenshot.ts](./examples/form-fill-screenshot.ts) | Fill forms and capture screenshots |
 | [chained-extract.ts](./examples/chained-extract.ts) | Execute multiple capture actions with one robot |
 | [simple-scrape.ts](./examples/simple-scrape.ts) | Convert pages to Markdown/HTML/Screenshots |
+| [basic-crawl.ts](./examples/basic-crawl.ts) | Crawl multiple pages automatically |
 | [llm-extraction.ts](./examples/llm-extraction.ts) | AI-powered extraction with natural language |
 | [scheduling.ts](./examples/scheduling.ts) | Set up robot schedules to execute runs |
 | [webhooks.ts](./examples/webhooks.ts) | Configure webhook notifications |
