@@ -8,6 +8,7 @@
 export { Extract } from './extract';
 export { Scrape } from './scrape';
 export { Crawl } from './crawl';
+export { Search } from './search';
 export { Robot } from './robot/robot';
 export { Client } from './client/maxun-client';
 

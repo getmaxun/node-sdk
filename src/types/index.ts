@@ -120,6 +120,7 @@ export interface RunResult {
     textData?: Record<string, any>;
     listData?: Record<string, any>[];
     crawlData?: any[];
+    searchData?: Record<string, any>;
     markdown?: string;
     html?: string;
     binaryOutput?: Record<string, string>;
@@ -212,4 +213,23 @@ export interface CrawlConfig {
 export interface CrawlOptions {
   name?: string;
   crawlConfig: CrawlConfig;
+}
+
+export type SearchMode = 'discover' | 'scrape';
+export type SearchProvider = 'duckduckgo';
+
+export interface SearchConfig {
+  query: string;
+  mode?: SearchMode;
+  provider?: SearchProvider;
+  filters?: {
+    timeRange?: 'day' | 'week' | 'month' | 'year';
+    region?: string;
+  };
+  limit?: number;
+}
+
+export interface SearchOptions {
+  name?: string;
+  searchConfig: SearchConfig;
 }

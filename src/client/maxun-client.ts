@@ -18,6 +18,7 @@ import {
   WorkflowFile,
   ExecutionOptions,
   CrawlOptions,
+  SearchOptions,
 } from '../types';
 
 export class Client {
@@ -284,6 +285,25 @@ export class Client {
 
     if (!response.data.data) {
       throw new MaxunError('Failed to create crawl robot');
+    }
+
+    return response.data.data;
+  }
+
+  /**
+   * Create a search robot to search and scrape search results
+   */
+  async createSearchRobot(options: SearchOptions): Promise<RobotData> {
+    const response = await this.axios.post<ApiResponse<RobotData>>(
+      '/search',
+      {
+        name: options.name,
+        searchConfig: options.searchConfig,
+      }
+    );
+
+    if (!response.data.data) {
+      throw new MaxunError('Failed to create search robot');
     }
 
     return response.data.data;
