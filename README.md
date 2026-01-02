@@ -9,6 +9,7 @@ Works with both Maxun Cloud and Maxun Open Source - automatically handles the di
 - **Extract structured data** from any website
 - **Scrape entire pages** as Markdown or HTML
 - **Crawl multiple pages** automatically to discover and scrape content
+- **Perform web searches** and extract results as metadata or full content
 - **Use AI to extract data** with natural language prompts
 - **Capture screenshots** (visible area or full page)
 - **Automate workflows** with clicks, form fills, and navigation
@@ -21,17 +22,18 @@ Follow the quick-start guide here: https://docs.maxun.dev/sdk/sdk-overview
 
 ## Table of Contents
 
-1. [Extract Robots](https://docs.maxun.dev/sdk/sdk-extract)
+1. [Extract](https://docs.maxun.dev/sdk/sdk-extract)
    - [LLM Extraction (Beta)](https://docs.maxun.dev/sdk/sdk-extract#llm-extraction-beta)
    - [Non-LLM Extraction](https://docs.maxun.dev/sdk/sdk-extract#non-llm-extraction)
    - [Auto Pagination](https://docs.maxun.dev/sdk/sdk-extract#2-auto-pagination-optional)
    - [Auto List Capture](https://docs.maxun.dev/sdk/sdk-extract#1-auto-list-capture)
 
-2. [Scrape Robots](https://docs.maxun.dev/sdk/sdk-scrape)
+2. [Scrape](https://docs.maxun.dev/sdk/sdk-scrape)
 
-3. [Crawl Robots](https://docs.maxun.dev/sdk/sdk-crawl)
+3. [Crawl](https://docs.maxun.dev/sdk/sdk-crawl)
+4. [Search](https://docs.maxun.dev/sdk/sdk-search)
 
-4. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
+5. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
    - [Scheduling](https://docs.maxun.dev/sdk/sdk-robot#scheduling)
    - [Webhooks](https://docs.maxun.dev/sdk/sdk-robot#webhooks)
    - [Runs](https://docs.maxun.dev/sdk/sdk-robot#running-robots)
