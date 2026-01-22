@@ -238,8 +238,10 @@ export class Client {
 
   /**
    * LLM-based extraction - extract data using natural language prompt
+   * URL is optional - if not provided, the server will search for the target website based on the prompt
    */
-  async extractWithLLM(url: string, options: {
+  async extractWithLLM(options: {
+    url?: string;
     prompt: string;
     llmProvider?: 'anthropic' | 'openai' | 'ollama';
     llmModel?: string;
@@ -250,7 +252,7 @@ export class Client {
     const response = await this.axios.post<ApiResponse<any>>(
       '/extract/llm',
       {
-        url,
+        url: options.url || undefined,
         prompt: options.prompt,
         llmProvider: options.llmProvider,
         llmModel: options.llmModel,
