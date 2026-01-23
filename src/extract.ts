@@ -75,8 +75,8 @@ export class Extract {
    * LLM-based extraction - create a robot using natural language prompt
    * The robot is saved and can be executed anytime by the user
    *
-   * @param url - The URL to extract data from
    * @param options - Extraction options
+   * @param options.url - (Optional) The URL to extract data from. If not provided, the system will automatically search for the target website based on the prompt.
    * @param options.prompt - Natural language prompt describing what to extract
    * @param options.llmProvider - LLM provider to use: 'anthropic', 'openai', or 'ollama' (default: 'ollama')
    * @param options.llmModel - Model name (default: 'llama3.2-vision' for ollama, 'claude-3-5-sonnet-20241022' for anthropic, 'gpt-4-vision-preview' for openai)
@@ -85,7 +85,8 @@ export class Extract {
    * @param options.robotName - Optional custom name for the robot
    * @returns Robot instance that can be executed
    */
-  async extract(url: string, options: {
+  async extract(options: {
+    url?: string;
     prompt: string;
     llmProvider?: 'anthropic' | 'openai' | 'ollama';
     llmModel?: string;
@@ -93,7 +94,7 @@ export class Extract {
     llmBaseUrl?: string;
     robotName?: string;
   }): Promise<Robot> {
-    const robotData = await this.client.extractWithLLM(url, options);
+    const robotData = await this.client.extractWithLLM(options);
     const robot = await this.client.getRobot(robotData.robotId);
     return new Robot(this.client, robot);
   }
