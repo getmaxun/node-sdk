@@ -32,14 +32,23 @@ async function main() {
 
     const result = await robot.run();
 
+    console.log("Result: ", JSON.stringify(result, null, 2))
+
     console.log('\n=== Scraping Completed ===');
+    console.log('Text length:', result.data.text?.length || 0, 'characters');
     console.log('Markdown length:', result.data.markdown?.length || 0, 'characters');
     console.log('HTML length:', result.data.html?.length || 0, 'characters');
     console.log('Screenshots:', result.screenshots?.length || 0);
 
+    if (result.data.text) {
+      console.log('\nText preview (first 200 chars):');
+      console.log(result.data.text.substring(0, 200) + '...');
+    }
+
     if (result.screenshots && result.screenshots.length > 0) {
       console.log('\nScreenshot URLs:');
-      result.screenshots.forEach((url, i) => {
+      result.screenshots.forEach((screenshot, i) => {
+        const url = typeof screenshot === 'string' ? screenshot : screenshot.data;
         console.log(`  ${i + 1}. ${url}`);
       });
     }
