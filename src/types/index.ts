@@ -121,11 +121,12 @@ export interface RunResult {
     listData?: Record<string, any>[];
     crawlData?: any[];
     searchData?: Record<string, any>;
+    text?: string;
     markdown?: string;
     html?: string;
     binaryOutput?: Record<string, string>;
   };
-  screenshots?: string[];
+  screenshots?: Array<string | { data: string; mimeType: string }>;
   status: RunStatus;
   runId: string;
 }
