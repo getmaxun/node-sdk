@@ -33,6 +33,7 @@ export class Client {
       headers: {
         'x-api-key': this.apiKey,
         'Content-Type': 'application/json',
+        ...(config.teamId ? { 'x-team-id': config.teamId } : {}),
       },
       timeout: 30000,
     });

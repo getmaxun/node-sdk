@@ -107,6 +107,7 @@ export interface WebhookConfig {
 export interface Config {
   apiKey: string;
   baseUrl?: string;
+  teamId?: string;
 }
 
 export interface ApiResponse<T> {
