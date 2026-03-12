@@ -132,6 +132,20 @@ export class Client {
   }
 
   /**
+   * Duplicate a robot with a new target URL
+   */
+  async duplicateRobot(robotId: string, targetUrl: string): Promise<RobotData> {
+    const response = await this.axios.post<ApiResponse<RobotData>>(
+      `/robots/${robotId}/duplicate`,
+      { targetUrl }
+    );
+    if (!response.data.data) {
+      throw new MaxunError(`Failed to duplicate robot ${robotId}`);
+    }
+    return response.data.data;
+  }
+
+  /**
    * Execute a robot and get results
    */
   async executeRobot(robotId: string, options?: ExecutionOptions): Promise<RunResult> {
