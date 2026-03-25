@@ -135,6 +135,14 @@ export class Robot {
   }
 
   /**
+   * Duplicate the robot with a new target URL
+   */
+  async duplicate(targetUrl: string): Promise<Robot> {
+    const newRobotData = await this.client.duplicateRobot(this.id, targetUrl);
+    return new Robot(this.client, newRobotData);
+  }
+
+  /**
    * Delete the robot
    */
   async delete(): Promise<void> {
