@@ -1,6 +1,6 @@
 {
   "name": "maxun-sdk",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Maxun Node SDK for web scraping and data extraction",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

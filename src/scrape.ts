@@ -18,6 +18,13 @@ export interface ScrapeOptions {
    * Default: ['markdown']
    */
   formats?: Format[];
+
+  /**
+   * Optional Smart Queries prompt. After scraping, the LLM analyzes the page
+   * and returns an answer based on your instructions.
+   * Adds 2 extra credits per run on top of the base 1 scrape credit.
+   */
+  smartQueries?: string;
 }
 
 export class Scrape {
@@ -46,6 +53,7 @@ export class Scrape {
         robotType: 'scrape',
         url,
         formats: options?.formats || ['markdown'],
+        ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
       } as any,
       workflow: [],
     };

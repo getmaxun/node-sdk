@@ -21,6 +21,7 @@ export interface RobotMeta {
   url?: string;
   formats?: Format[];
   subscriptionLevel?: number;
+  smartQueries?: string;
 }
 
 export interface Where {
@@ -125,6 +126,7 @@ export interface RunResult {
     text?: string;
     markdown?: string;
     html?: string;
+    promptResult?: string | null;
     binaryOutput?: Record<string, string>;
   };
   screenshots?: Array<string | { data: string; mimeType: string }>;
