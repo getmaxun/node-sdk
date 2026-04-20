@@ -21,6 +21,7 @@ export interface RobotMeta {
   url?: string;
   formats?: Format[];
   subscriptionLevel?: number;
+  smartQueries?: string;
 }
 
 export interface Where {
