@@ -24,7 +24,7 @@ export interface ScrapeOptions {
    * and returns an answer based on your instructions.
    * Adds 2 extra credits per run on top of the base 1 scrape credit.
    */
-  promptInstructions?: string;
+  smartQueries?: string;
 }
 
 export class Scrape {
@@ -53,7 +53,7 @@ export class Scrape {
         robotType: 'scrape',
         url,
         formats: options?.formats || ['markdown'],
-        ...(options?.promptInstructions ? { promptInstructions: options.promptInstructions } : {}),
+        ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
       } as any,
       workflow: [],
     };
