@@ -12,6 +12,8 @@ export interface ScrapeOptions {
    * Output formats for scraping
    * - 'markdown': Page content in markdown format
    * - 'html': Page content in HTML format
+   * - 'text': Plain text content
+   * - 'links': All hyperlinks on the page
    * - 'screenshot-visible': Screenshot of visible viewport
    * - 'screenshot-fullpage': Full page screenshot
    *
@@ -24,7 +26,7 @@ export interface ScrapeOptions {
    * and returns an answer based on your instructions.
    * Adds 2 extra credits per run on top of the base 1 scrape credit.
    */
-  promptInstructions?: string;
+  smartQueries?: string;
 }
 
 export class Scrape {
@@ -53,7 +55,7 @@ export class Scrape {
         robotType: 'scrape',
         url,
         formats: options?.formats || ['markdown'],
-        ...(options?.promptInstructions ? { promptInstructions: options.promptInstructions } : {}),
+        ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
       } as any,
       workflow: [],
     };
