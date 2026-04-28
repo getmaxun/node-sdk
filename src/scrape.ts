@@ -12,6 +12,8 @@ export interface ScrapeOptions {
    * Output formats for scraping
    * - 'markdown': Page content in markdown format
    * - 'html': Page content in HTML format
+   * - 'text': Plain text content
+   * - 'links': All hyperlinks on the page
    * - 'screenshot-visible': Screenshot of visible viewport
    * - 'screenshot-fullpage': Full page screenshot
    *
