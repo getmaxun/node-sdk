@@ -8,7 +8,7 @@
 
 export type RobotType = 'extract' | 'scrape' | 'crawl' | 'search';
 export type RobotMode = 'normal' | 'bulk';
-export type Format = 'markdown' | 'html' | 'screenshot-visible' | 'screenshot-fullpage';
+export type Format = 'markdown' | 'html' | 'text' | 'links' | 'screenshot-visible' | 'screenshot-fullpage';
 export type RunStatus = 'running' | 'queued' | 'success' | 'failed' | 'aborting' | 'aborted';
 export type TimeUnit = 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
 export type CrawlMode = 'domain' | 'subdomain' | 'path';
@@ -126,6 +126,7 @@ export interface RunResult {
     text?: string;
     markdown?: string;
     html?: string;
+    links?: string[];
     promptResult?: string | null;
     binaryOutput?: Record<string, string>;
   };
