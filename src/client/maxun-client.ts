@@ -327,6 +327,42 @@ export class Client {
   }
 
   /**
+   * Create a document-parse robot from a PDF file path or Buffer.
+   */
+  async createDocumentParseRobot(
+    file: string | Buffer,
+    outputFormats: ('markdown' | 'html' | 'links')[],
+    options?: { robotName?: string; fileName?: string }
+  ): Promise<{ robot: RobotData; parsedOutput: Record<string, any> }> {
+    const form = new FormData();
+
+    if (typeof file === 'string') {
+      form.append('file', fs.createReadStream(file), options?.fileName || require('path').basename(file));
+    } else {
+      form.append('file', file, { filename: options?.fileName || 'document.pdf', contentType: 'application/pdf' });
+    }
+
+    if (options?.robotName) form.append('robotName', options.robotName);
+    outputFormats.forEach((f) => form.append('outputFormats[]', f));
+
+    const response = await this.axios.post<any>(
+      '/robots/document-parse',
+      form,
+      { headers: form.getHeaders(), timeout: 120000 }
+    );
+
+    const data = response.data;
+    if (!data?.data && !data?.robot) {
+      throw new MaxunError('Failed to create document-parse robot');
+    }
+
+    return {
+      robot: data.data || data.robot,
+      parsedOutput: data.parsedOutput || {},
+    };
+  }
+
+  /**
    * Create a crawl robot to discover and scrape multiple pages
    */
   async createCrawlRobot(url: string, options: CrawlOptions): Promise<RobotData> {
