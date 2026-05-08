@@ -292,7 +292,7 @@ export class Client {
   /**
    * Create a document-extraction robot from a PDF file path or Buffer.
    */
-  async createDocumentRobot(
+  async createDocumentExtractRobot(
     file: string | Buffer,
     prompt: string,
     options?: { robotName?: string; ollamaModel?: string; fileName?: string }
