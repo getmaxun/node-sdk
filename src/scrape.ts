@@ -14,6 +14,7 @@ export interface ScrapeOptions {
    * - 'html': Page content in HTML format
    * - 'text': Plain text content
    * - 'links': All hyperlinks on the page
+   * - 'summary': AI-generated summary of the page content
    * - 'screenshot-visible': Screenshot of visible viewport
    * - 'screenshot-fullpage': Full page screenshot
    *
