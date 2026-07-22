@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/71a6f10b-5b2a-45dd-9ef7-53d0bcf2b76d
 - **Handle pagination** automatically (scroll, click, load more)
 
 ## Quick Start
-Follow the quick-start guide here: https://docs.maxun.dev/sdk/sdk-overview
+Follow the quick-start guide here: https://docs.maxun.dev/category/node-sdk
 
 ## Table of Contents
 
