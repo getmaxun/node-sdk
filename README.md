@@ -21,27 +21,27 @@ https://github.com/user-attachments/assets/71a6f10b-5b2a-45dd-9ef7-53d0bcf2b76d
 - **Handle pagination** automatically (scroll, click, load more)
 
 ## Quick Start
-Follow the quick-start guide here: https://docs.maxun.dev/sdk/sdk-overview
+Follow the quick-start guide here: https://docs.maxun.dev/category/node-sdk
 
 ## Table of Contents
 
-1. [Extract](https://docs.maxun.dev/sdk/sdk-extract)
-   - [LLM Extraction (Beta)](https://docs.maxun.dev/sdk/sdk-extract#llm-extraction-beta)
-   - [Non-LLM Extraction](https://docs.maxun.dev/sdk/sdk-extract#non-llm-extraction)
-   - [Auto Pagination](https://docs.maxun.dev/sdk/sdk-extract#2-auto-pagination-optional)
-   - [Auto List Capture](https://docs.maxun.dev/sdk/sdk-extract#1-auto-list-capture)
+1. [Extract](https://docs.maxun.dev/sdk/node-sdk/sdk-extract)
+   - [LLM Extraction (Beta)](https://docs.maxun.dev/sdk/node-sdk/sdk-extract#llm-extraction-beta)
+   - [Non-LLM Extraction](https://docs.maxun.dev/sdk/node-sdk/sdk-extract#non-llm-extraction)
+   - [Auto Pagination](https://docs.maxun.dev/sdk/node-sdk/sdk-extract#2-auto-pagination-optional)
+   - [Auto List Capture](https://docs.maxun.dev/sdk/node-sdk/sdk-extract#1-auto-list-capture)
 
-2. [Scrape](https://docs.maxun.dev/sdk/sdk-scrape)
+2. [Scrape](https://docs.maxun.dev/sdk/node-sdk/sdk-scrape)
 
-3. [Crawl](https://docs.maxun.dev/sdk/sdk-crawl)
-4. [Search](https://docs.maxun.dev/sdk/sdk-search)
+3. [Crawl](https://docs.maxun.dev/sdk/node-sdk/sdk-crawl)
+4. [Search](https://docs.maxun.dev/sdk/node-sdk/sdk-search)
 
-5. [Robot Management](https://docs.maxun.dev/sdk/sdk-robot)
-   - [Scheduling](https://docs.maxun.dev/sdk/sdk-robot#scheduling)
-   - [Webhooks](https://docs.maxun.dev/sdk/sdk-robot#webhooks)
-   - [Runs](https://docs.maxun.dev/sdk/sdk-robot#running-robots)
-   - [Error Handling](https://docs.maxun.dev/sdk/sdk-robot#error-handling)
-   - [Execution History](https://docs.maxun.dev/sdk/sdk-robot#execution-history)
+5. [Robot Management](https://docs.maxun.dev/sdk/node-sdk/sdk-robot)
+   - [Scheduling](https://docs.maxun.dev/sdk/node-sdk/sdk-robot#scheduling)
+   - [Webhooks](https://docs.maxun.dev/sdk/node-sdk/sdk-robot#webhooks)
+   - [Runs](https://docs.maxun.dev/sdk/node-sdk/sdk-robot#running-robots)
+   - [Error Handling](https://docs.maxun.dev/sdk/node-sdk/sdk-robot#error-handling)
+   - [Execution History](https://docs.maxun.dev/sdk/node-sdk/sdk-robot#execution-history)
 
 
 ## Examples

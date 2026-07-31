@@ -3,7 +3,7 @@
  */
 
 import { Client } from './client/maxun-client';
-import { Config, CrawlConfig } from './types';
+import { Config, CrawlConfig, CrawlOptions } from './types';
 import { Robot } from './robot/robot';
 
 export class Crawl {
@@ -20,7 +20,7 @@ export class Crawl {
    * @param crawlConfig - Crawl configuration
    * @returns Promise<Robot>
    */
-  async create(name: string, url: string, crawlConfig: CrawlConfig): Promise<Robot> {
+  async create(name: string, url: string, crawlConfig: CrawlConfig, options?: Omit<CrawlOptions, 'name' | 'crawlConfig'>): Promise<Robot> {
     if (!url) {
       throw new Error('URL is required');
     }
@@ -32,6 +32,7 @@ export class Crawl {
     const robot = await this.client.createCrawlRobot(url, {
       name,
       crawlConfig,
+      ...options,
     });
 
     return new Robot(this.client, robot);

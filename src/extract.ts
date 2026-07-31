@@ -78,11 +78,17 @@ export class Extract {
    * @param options - Extraction options
    * @param options.url - (Optional) The URL to extract data from. If not provided, the system will automatically search for the target website based on the prompt.
    * @param options.prompt - Natural language prompt describing what to extract
-   * @param options.llmProvider - LLM provider to use: 'anthropic', 'openai', or 'ollama' (default: 'ollama')
-   * @param options.llmModel - Model name (default: 'llama3.2-vision' for ollama, 'claude-3-5-sonnet-20241022' for anthropic, 'gpt-4-vision-preview' for openai)
-   * @param options.llmApiKey - API key for the LLM provider (not needed for ollama)
-   * @param options.llmBaseUrl - Base URL for the LLM provider (default: 'http://localhost:11434' for ollama)
+   * @param options.llmProvider - SELF-HOSTED ONLY. LLM provider: 'anthropic', 'openai', or 'ollama' (default: 'ollama')
+   * @param options.llmModel - SELF-HOSTED ONLY. Model name (default: 'llama3.2-vision' for ollama, 'claude-3-5-sonnet-20241022' for anthropic, 'gpt-4-vision-preview' for openai)
+   * @param options.llmApiKey - SELF-HOSTED ONLY. API key for the LLM provider (not needed for ollama)
+   * @param options.llmBaseUrl - SELF-HOSTED ONLY. Base URL for the LLM provider (default: 'http://localhost:11434' for ollama)
    * @param options.robotName - Optional custom name for the robot
+   *
+   * @remarks
+   * The four `llm*` options are only honoured by a self-hosted Maxun instance,
+   * where you supply your own inference. Maxun Cloud manages the provider,
+   * model and credentials internally and will reject a request that sets any of
+   * them with HTTP 400 — omit them entirely when pointing at Maxun Cloud.
    * @returns Robot instance that can be executed
    */
   async extract(options: {

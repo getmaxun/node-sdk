@@ -3,7 +3,7 @@
  */
 
 import { Client } from './client/maxun-client';
-import { Config, SearchConfig } from './types';
+import { Config, SearchConfig, SearchOptions } from './types';
 import { Robot } from './robot/robot';
 
 export class Search {
@@ -19,7 +19,7 @@ export class Search {
    * @param searchConfig - Search configuration
    * @returns Promise<Robot>
    */
-  async create(name: string, searchConfig: SearchConfig): Promise<Robot> {
+  async create(name: string, searchConfig: SearchConfig, options?: Omit<SearchOptions, 'name' | 'searchConfig'>): Promise<Robot> {
     if (!searchConfig) {
       throw new Error('Search configuration is required');
     }
@@ -31,6 +31,7 @@ export class Search {
     const robot = await this.client.createSearchRobot({
       name,
       searchConfig,
+      ...options,
     });
 
     return new Robot(this.client, robot);

@@ -21,7 +21,46 @@ import {
   ExecutionOptions,
   CrawlOptions,
   SearchOptions,
+  LlmOptions,
 } from '../types';
+
+/**
+ * Serialises LLM options, omitting anything not explicitly set.
+ *
+ * Self-hosted Maxun requires these whenever a request needs a model; Maxun
+ * Cloud manages its own and rejects them, so an unset option must not appear in
+ * the payload at all.
+ */
+export function buildLlmPayload(options: LlmOptions): Record<string, string> {
+  const provider = options.llmProvider?.trim();
+  const model = options.llmModel?.trim();
+  const apiKey = options.llmApiKey?.trim();
+  const baseUrl = options.llmBaseUrl?.trim();
+
+  /**
+   * All-or-nothing. Omit every option to use the platform's own models (the
+   * only thing Maxun Cloud accepts), or supply a complete configuration for a
+   * self-hosted instance. A partial configuration is rejected here rather than
+   * by the server, so the failure names the missing field immediately.
+   *
+   * `llmModel` is optional: self-hosted Maxun applies that provider's default
+   * when it is omitted, so robots created before model selection existed keep
+   * working without a migration.
+   */
+  if (model && !provider) {
+    throw new MaxunError('llmProvider is required when llmModel is set.');
+  }
+  if (provider && provider !== 'ollama' && !apiKey) {
+    throw new MaxunError(`llmApiKey is required for provider "${provider}".`);
+  }
+
+  return {
+    ...(provider ? { llmProvider: provider } : {}),
+    ...(model ? { llmModel: model } : {}),
+    ...(apiKey ? { llmApiKey: apiKey } : {}),
+    ...(baseUrl ? { llmBaseUrl: baseUrl } : {}),
+  };
+}
 
 export class Client {
   private axios: AxiosInstance;
@@ -271,10 +310,10 @@ export class Client {
       {
         url: options.url || undefined,
         prompt: options.prompt,
-        llmProvider: options.llmProvider,
-        llmModel: options.llmModel,
-        llmApiKey: options.llmApiKey,
-        llmBaseUrl: options.llmBaseUrl,
+        ...(options.llmProvider ? { llmProvider: options.llmProvider } : {}),
+        ...(options.llmModel ? { llmModel: options.llmModel } : {}),
+        ...(options.llmApiKey ? { llmApiKey: options.llmApiKey } : {}),
+        ...(options.llmBaseUrl ? { llmBaseUrl: options.llmBaseUrl } : {}),
         robotName: options.robotName,
       },
       {
@@ -295,7 +334,7 @@ export class Client {
   async createDocumentExtractRobot(
     file: string | Buffer,
     prompt: string,
-    options?: { robotName?: string; ollamaModel?: string; fileName?: string }
+    options?: { robotName?: string; fileName?: string } & LlmOptions
   ): Promise<{ robot: RobotData; extractionSchema: Record<string, any> }> {
     const form = new FormData();
 
@@ -307,7 +346,11 @@ export class Client {
 
     form.append('prompt', prompt);
     if (options?.robotName) form.append('robotName', options.robotName);
-    if (options?.ollamaModel) form.append('ollamaModel', options.ollamaModel);
+    /**
+     * Self-hosted Maxun requires these; Maxun Cloud manages its own model and
+     * rejects them, so only explicitly supplied values are appended.
+     */
+    Object.entries(buildLlmPayload(options || {})).forEach(([key, value]) => form.append(key, value));
 
     const response = await this.axios.post<any>(
       '/robots/document',
@@ -372,6 +415,8 @@ export class Client {
         url,
         name: options.name,
         crawlConfig: options.crawlConfig,
+        ...(options.formats ? { formats: options.formats } : {}),
+        ...buildLlmPayload(options),
       }
     );
 
@@ -391,6 +436,8 @@ export class Client {
       {
         name: options.name,
         searchConfig: options.searchConfig,
+        ...(options.formats ? { formats: options.formats } : {}),
+        ...buildLlmPayload(options),
       }
     );
 

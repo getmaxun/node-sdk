@@ -13,7 +13,14 @@ export type RunStatus = 'running' | 'queued' | 'success' | 'failed' | 'aborting'
 export type TimeUnit = 'MINUTES' | 'HOURS' | 'DAYS' | 'WEEKS' | 'MONTHS';
 export type CrawlMode = 'domain' | 'subdomain' | 'path';
 
-export interface RobotMeta {
+export interface LlmOptions {
+  llmProvider?: LLMProvider;
+  llmModel?: string;
+  llmApiKey?: string;
+  llmBaseUrl?: string;
+}
+
+export interface RobotMeta extends LlmOptions {
   name: string;
   id: string;
   robotType?: RobotType;
@@ -216,9 +223,10 @@ export interface CrawlConfig {
   followLinks?: boolean;
 }
 
-export interface CrawlOptions {
+export interface CrawlOptions extends LlmOptions {
   name?: string;
   crawlConfig: CrawlConfig;
+  formats?: Format[];
 }
 
 export type SearchMode = 'discover' | 'scrape';
@@ -235,7 +243,8 @@ export interface SearchConfig {
   limit?: number;
 }
 
-export interface SearchOptions {
+export interface SearchOptions extends LlmOptions {
   name?: string;
   searchConfig: SearchConfig;
+  formats?: Format[];
 }

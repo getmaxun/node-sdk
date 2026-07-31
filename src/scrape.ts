@@ -2,12 +2,11 @@
  * Scrape - Main class for the Scrape SDK
  */
 
-import { Client } from './client/maxun-client';
-import { Config, WorkflowFile, RobotData, Format } from './types';
-import { WorkflowBuilder } from './builders/workflow-builder';
+import { Client, buildLlmPayload } from './client/maxun-client';
+import { Config, WorkflowFile, RobotData, Format, LlmOptions } from './types';
 import { Robot } from './robot/robot';
 
-export interface ScrapeOptions {
+export interface ScrapeOptions extends LlmOptions {
   /**
    * Output formats for scraping
    * - 'markdown': Page content in markdown format
@@ -57,6 +56,7 @@ export class Scrape {
         url,
         formats: options?.formats || ['markdown'],
         ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
+        ...buildLlmPayload(options || {}),
       } as any,
       workflow: [],
     };
