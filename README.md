@@ -60,5 +60,6 @@ Check out the [examples](./examples) directory for complete working examples:
 | [scheduling.ts](./examples/scheduling.ts) | Set up robot schedules to execute runs |
 | [webhooks.ts](./examples/webhooks.ts) | Configure webhook notifications |
 | [robot-management.ts](./examples/robot-management.ts) | CRUD operations for robots |
+| [list-limit.ts](./examples/list-limit.ts) | Change how many items a list collects |
 | [complete-workflow.ts](./examples/complete-workflow.ts) | Create a robot combining multiple features |
 

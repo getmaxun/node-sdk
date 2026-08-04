@@ -2,7 +2,7 @@
  * Robot class - represents a saved workflow that can be executed
  */
 
-import { RunResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run } from '../types';
+import { RunResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run, MaxunError } from '../types';
 import { Client } from '../client/maxun-client';
 
 export class Robot {
@@ -109,6 +109,42 @@ export class Robot {
     const updated = await this.client.updateRobot(this.id, updates as any);
     this.robotData = updated;
   }
+
+  /**
+   * Set the maximum number of items this robot collects.
+   *
+   * Applies to the three actions that carry a limit: `scrapeList` on extract
+   * robots, `crawl` on crawl robots, and `search` on search robots. The action
+   * is located automatically, so callers do not need to know its position in
+   * the workflow. Only the limit is sent; the rest of the workflow is untouched.
+   *
+   * @throws MaxunError if the robot has no action with a limit.
+   */
+  async setListLimit(limit: number): Promise<void> {
+    const LIMIT_ACTIONS = ['scrapeList', 'crawl', 'search'];
+    const workflow = this.robotData.recording?.workflow || [];
+
+    for (let p = 0; p < workflow.length; p++) {
+      const what = workflow[p].what || [];
+      for (let a = 0; a < what.length; a++) {
+        if (!LIMIT_ACTIONS.includes(what[a].action)) continue;
+        const args = what[a].args || [];
+        for (let g = 0; g < args.length; g++) {
+          const arg = args[g];
+          if (arg && typeof arg === 'object' && 'limit' in arg) {
+            this.robotData = await this.client.updateListLimits(this.id, [
+              { pairIndex: p, actionIndex: a, argIndex: g, limit },
+            ]);
+            return;
+          }
+        }
+      }
+    }
+
+    throw new MaxunError('This robot has no scrapeList, crawl, or search action with a limit to update.');
+  }
+
+
 
   /**
    * Get all webhooks for this robot
