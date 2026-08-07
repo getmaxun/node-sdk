@@ -383,7 +383,7 @@ export class Client {
     file: string | Buffer,
     outputFormats: ('markdown' | 'html' | 'links' | 'summary')[],
     options?: { robotName?: string; fileName?: string } & LlmOptions
-  ): Promise<{ robot: RobotData; parsedOutput: Record<string, any> }> {
+  ): Promise<{ robot: RobotData }> {
     const form = new FormData();
 
     if (typeof file === 'string') {
@@ -410,7 +410,6 @@ export class Client {
 
     return {
       robot: data.data || data.robot,
-      parsedOutput: data.parsedOutput || {},
     };
   }
 
