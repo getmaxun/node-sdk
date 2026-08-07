@@ -62,6 +62,13 @@ export function buildLlmPayload(options: LlmOptions): Record<string, string> {
   };
 }
 
+function documentContentType(fileName?: string): string {
+  const ext = (fileName || '').toLowerCase().split('.').pop();
+  if (ext === 'csv') return 'text/csv';
+  if (ext === 'xlsx') return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  return 'application/pdf';
+}
+
 export class Client {
   private axios: AxiosInstance;
   private apiKey: string;
@@ -341,7 +348,7 @@ export class Client {
     if (typeof file === 'string') {
       form.append('file', fs.createReadStream(file), options?.fileName || require('path').basename(file));
     } else {
-      form.append('file', file, { filename: options?.fileName || 'document.pdf', contentType: 'application/pdf' });
+      form.append('file', file, { filename: options?.fileName || 'document.pdf', contentType: documentContentType(options?.fileName) });
     }
 
     form.append('prompt', prompt);
@@ -374,19 +381,21 @@ export class Client {
    */
   async createDocumentParseRobot(
     file: string | Buffer,
-    outputFormats: ('markdown' | 'html' | 'links')[],
-    options?: { robotName?: string; fileName?: string }
+    outputFormats: ('markdown' | 'html' | 'links' | 'summary')[],
+    options?: { robotName?: string; fileName?: string } & LlmOptions
   ): Promise<{ robot: RobotData; parsedOutput: Record<string, any> }> {
     const form = new FormData();
 
     if (typeof file === 'string') {
       form.append('file', fs.createReadStream(file), options?.fileName || require('path').basename(file));
     } else {
-      form.append('file', file, { filename: options?.fileName || 'document.pdf', contentType: 'application/pdf' });
+      form.append('file', file, { filename: options?.fileName || 'document.pdf', contentType: documentContentType(options?.fileName) });
     }
 
     if (options?.robotName) form.append('robotName', options.robotName);
     outputFormats.forEach((f) => form.append('outputFormats[]', f));
+
+    Object.entries(buildLlmPayload(options || {})).forEach(([key, value]) => form.append(key, value));
 
     const response = await this.axios.post<any>(
       '/robots/document-parse',
