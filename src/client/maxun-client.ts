@@ -22,6 +22,8 @@ import {
   CrawlOptions,
   SearchOptions,
   LlmOptions,
+  ListLimitUpdate, //added
+
 } from '../types';
 
 /**
@@ -171,6 +173,22 @@ export class Client {
     }
     return response.data.data;
   }
+
+
+   /**
+   * Update one or more list limits without resending the whole workflow.
+   */
+  async updateListLimits(robotId: string, limits: ListLimitUpdate[]): Promise<RobotData> {
+    const response = await this.axios.put<ApiResponse<RobotData>>(
+      `/robots/${robotId}`,
+      { limits }
+    );
+    if (!response.data.data) {
+      throw new MaxunError(`Failed to update list limits for robot ${robotId}`);
+    }
+    return response.data.data;
+  }
+
 
   /**
    * Delete a robot

@@ -78,6 +78,20 @@ export interface RobotData {
   updatedAt?: string;
 }
 
+
+/**
+ * Coordinates of a single list limit within a robot's workflow,
+ * plus the new value to set.
+ */
+export interface ListLimitUpdate {
+  pairIndex: number;
+  actionIndex: number;
+  argIndex: number;
+  limit: number;
+}
+
+
+
 export interface Run {
   id: string;
   status: RunStatus;
