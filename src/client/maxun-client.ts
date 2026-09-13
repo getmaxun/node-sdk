@@ -329,6 +329,7 @@ export class Client {
     llmApiKey?: string;
     llmBaseUrl?: string;
     robotName?: string;
+    compareRuns?: boolean;
   }): Promise<any> {
     const response = await this.axios.post<ApiResponse<any>>(
       '/extract/llm',
@@ -340,6 +341,7 @@ export class Client {
         ...(options.llmApiKey ? { llmApiKey: options.llmApiKey } : {}),
         ...(options.llmBaseUrl ? { llmBaseUrl: options.llmBaseUrl } : {}),
         robotName: options.robotName,
+        ...(options.compareRuns !== undefined ? { compareRuns: options.compareRuns } : {}),
       },
       {
         timeout: 300000,

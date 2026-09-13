@@ -29,6 +29,7 @@ export interface RobotMeta extends LlmOptions {
   formats?: Format[];
   subscriptionLevel?: number;
   smartQueries?: string;
+  compareRuns?: boolean;
 }
 
 export interface Where {
@@ -99,6 +100,7 @@ export interface Run {
   runId: string;
   startedAt: string;
   finishedAt: string | null;
+  hasChanges?: boolean;
   serializableOutput?: {
     scrapeSchema?: Record<string, any>;
     scrapeList?: Record<string, any>[];
@@ -155,6 +157,8 @@ export interface RunResult {
   screenshots?: Array<string | { data: string; mimeType: string }>;
   status: RunStatus;
   runId: string;
+  hasChanges?: boolean;
+  changedFormats?: string[];
 }
 
 export interface ExecutionOptions {
