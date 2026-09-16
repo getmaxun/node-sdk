@@ -189,6 +189,12 @@ export abstract class WorkflowBuilder {
     return this;
   }
 
+  /** Enable or disable comparison with the previous successful run. */
+  monitorChanges(enabled: boolean = true): this {
+    this.meta.monitor = enabled;
+    return this;
+  }
+
   /**
    * Add a new step to the workflow
    */

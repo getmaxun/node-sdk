@@ -19,6 +19,7 @@ import {
   MaxunError,
   WorkflowFile,
   ExecutionOptions,
+  RunDiffResult,
   CrawlOptions,
   SearchOptions,
   LlmOptions,
@@ -143,12 +144,14 @@ export class Client {
     const httpsAgent = new https.Agent({ keepAlive: false });
 
     const robotTypeValue = (workflowFile.meta as any)?.robotType || (workflowFile.meta as any)?.type;
+    const { monitor, ...publicMeta } = workflowFile.meta || {} as any;
     const payload = {
       ...workflowFile,
       meta: {
-        ...workflowFile.meta,
+        ...publicMeta,
         type: robotTypeValue, 
         robotType: robotTypeValue,
+        ...(monitor !== undefined ? { compareRuns: monitor } : {}),
       }
     };
 
@@ -167,7 +170,17 @@ export class Client {
    * Update an existing robot
    */
   async updateRobot(robotId: string, updates: Partial<WorkflowFile>): Promise<RobotData> {
-    const response = await this.axios.put<ApiResponse<RobotData>>(`/robots/${robotId}`, updates);
+    const { monitor, ...publicMeta } = updates.meta || {} as any;
+    const payload = updates.meta
+      ? {
+          ...updates,
+          meta: {
+            ...publicMeta,
+            ...(monitor !== undefined ? { compareRuns: monitor } : {}),
+          },
+        }
+      : updates;
+    const response = await this.axios.put<ApiResponse<RobotData>>(`/robots/${robotId}`, payload);
     if (!response.data.data) {
       throw new MaxunError(`Failed to update robot ${robotId}`);
     }
@@ -253,6 +266,18 @@ export class Client {
     return response.data.data;
   }
 
+  /** Get the detailed monitoring diff for a completed run. */
+  async getRunDiff(robotId: string, runId: string, format?: string): Promise<RunDiffResult> {
+    const response = await this.axios.get<ApiResponse<RunDiffResult>>(
+      `/robots/${robotId}/runs/${runId}/diff`,
+      { params: format ? { format } : undefined }
+    );
+    if (!response.data.data) {
+      throw new MaxunError(`Monitoring diff for run ${runId} was not found`, 404);
+    }
+    return response.data.data;
+  }
+
   /**
    * Abort a running or queued run
    */
@@ -329,6 +354,7 @@ export class Client {
     llmApiKey?: string;
     llmBaseUrl?: string;
     robotName?: string;
+    monitor?: boolean;
   }): Promise<any> {
     const response = await this.axios.post<ApiResponse<any>>(
       '/extract/llm',
@@ -340,6 +366,7 @@ export class Client {
         ...(options.llmApiKey ? { llmApiKey: options.llmApiKey } : {}),
         ...(options.llmBaseUrl ? { llmBaseUrl: options.llmBaseUrl } : {}),
         robotName: options.robotName,
+        ...(options.monitor !== undefined ? { compareRuns: options.monitor } : {}),
       },
       {
         timeout: 300000,

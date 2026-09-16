@@ -27,6 +27,8 @@ export interface ScrapeOptions extends LlmOptions {
    * Adds 2 extra credits per run on top of the base 1 scrape credit.
    */
   smartQueries?: string;
+  /** Monitor this robot for changes between successful runs. */
+  monitor?: boolean;
 }
 
 export class Scrape {
@@ -55,6 +57,7 @@ export class Scrape {
         robotType: 'scrape',
         url,
         formats: options?.formats || ['markdown'],
+        ...(options?.monitor !== undefined ? { monitor: options.monitor } : {}),
         ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
         ...buildLlmPayload(options || {}),
       } as any,
