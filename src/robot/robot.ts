@@ -2,7 +2,7 @@
  * Robot class - represents a saved workflow that can be executed
  */
 
-import { RunResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run, MaxunError } from '../types';
+import { RunResult, RunDiffResult, RobotData, ScheduleConfig, WebhookConfig, ExecutionOptions, Run, MaxunError } from '../types';
 import { Client } from '../client/maxun-client';
 
 export class Robot {
@@ -54,6 +54,11 @@ export class Robot {
    */
   async getRun(runId: string): Promise<Run> {
     return await this.client.getRun(this.id, runId);
+  }
+
+  /** Get the detailed monitoring diff for a completed run. */
+  async getRunDiff(runId: string, format?: string): Promise<RunDiffResult> {
+    return await this.client.getRunDiff(this.id, runId, format);
   }
 
   /**

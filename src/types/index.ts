@@ -29,7 +29,7 @@ export interface RobotMeta extends LlmOptions {
   formats?: Format[];
   subscriptionLevel?: number;
   smartQueries?: string;
-  compareRuns?: boolean;
+  monitor?: boolean;
 }
 
 export interface Where {
@@ -159,6 +159,25 @@ export interface RunResult {
   runId: string;
   hasChanges?: boolean;
   changedFormats?: string[];
+}
+
+export interface RunDiffChange {
+  value: string;
+  added: boolean;
+  removed: boolean;
+}
+
+export interface RunFormatDiff {
+  format: string;
+  changes: RunDiffChange[];
+}
+
+export interface RunDiffResult {
+  runId: string;
+  previousRunId: string | null;
+  hasChanges: boolean;
+  changedFormats: string[];
+  diffs: RunFormatDiff[];
 }
 
 export interface ExecutionOptions {

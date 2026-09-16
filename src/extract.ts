@@ -99,7 +99,7 @@ export class Extract {
     llmApiKey?: string;
     llmBaseUrl?: string;
     robotName?: string;
-    compareRuns?: boolean;
+    monitor?: boolean;
   }): Promise<Robot> {
     const robotData = await this.client.extractWithLLM(options);
     const robot = await this.client.getRobot(robotData.robotId);
