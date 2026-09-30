@@ -1,70 +1,31 @@
 /**
- * Webhooks Example
+ * Get notified when a run finishes.
  *
- * This example demonstrates:
- * - Adding webhooks for robot events
- * - Configuring webhook events and headers
- * - Getting webhook notifications when runs complete
- *
- * Site: Indie Hackers (https://www.indiehackers.com)
+ * Maxun POSTs { event_type: 'run_completed' | 'run_failed', timestamp, webhook_id, data }
+ * to your URL. Failed deliveries are retried with exponential backoff.
  */
-
 import 'dotenv/config';
-import { Extract } from 'maxun-sdk';
+import { Maxun } from 'maxun-sdk';
+
+const maxun = new Maxun();
 
 async function main() {
-  const extractor = new Extract({
-    apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL!
-  });
+  const robot = await maxun.scrape('Example With Webhook', 'https://example.com');
 
-  try {
-    // Create a robot to extract Indie Hackers posts
-    const robot = await extractor
-      .create('Indie Hackers Posts Monitor')
-      .navigate('https://www.indiehackers.com/tags/artificial-intelligence')
-      .captureList({
-        selector: 'a.ember-view.portal-entry',
-        maxItems: 10
-      });
+  // Both events by default
+  const hook = await robot.addWebhook('https://your-server.example/maxun-hook');
+  console.log('Added', hook.id, hook.events);
 
-    console.log(`Robot created: ${robot.id}`);
+  // Only failures, with more retries
+  await robot.addWebhook({ url: 'https://alerts.example/maxun-failed', events: ['run_failed'], retryAttempts: 5 });
 
-    // Add webhook for notifications
-    await robot.addWebhook({
-      url: 'https://your-webhook-url.com/notifications',
-      events: ['run.completed', 'run.failed'],
-      headers: {
-        'Authorization': 'Bearer your-secret-token',
-        'X-Custom-Header': 'maxun-webhook'
-      }
-    });
+  console.log(robot.getWebhooks().map((w) => w.url));
 
-    console.log('\n✓ Webhook added');
-    console.log('  URL: https://your-webhook-url.com/notifications');
-    console.log('  Events: run.completed, run.failed');
-
-    const webhooks = robot.getWebhooks();
-    console.log(`\n✓ Total webhooks configured: ${webhooks?.length || 0}`);
-
-    // Run the robot - webhook will be triggered on completion
-    console.log('\nRunning robot...');
-    const result = await robot.run();
-
-    console.log(`\n✓ Run completed: ${result.runId}`);
-    console.log(`  Status: ${result.status}`);
-    console.log(`  Items extracted: ${result.data.listData?.length || 0}`);
-    console.log('\n→ Webhook notification has been sent to your endpoint');
-
-  } catch (error: any) {
-    console.error('Error:', error.message);
-    process.exit(1);
-  }
+  await robot.removeWebhook('https://alerts.example/maxun-failed');
+  await robot.removeWebhooks(); // remove all
 }
 
-if (!process.env.MAXUN_API_KEY) {
-  console.error('Error: MAXUN_API_KEY environment variable is required');
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
-}
-
-main();
+});

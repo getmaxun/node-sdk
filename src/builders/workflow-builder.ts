@@ -13,6 +13,7 @@ import {
   RobotMode,
   Format,
 } from '../types';
+import { warn } from '../utils';
 
 export abstract class WorkflowBuilder {
   protected workflow: Workflow = [];
@@ -152,31 +153,42 @@ export abstract class WorkflowBuilder {
   }
 
   /**
-   * Scroll the page
+   * Scroll down by `pages` screen heights (default 1).
    */
-  scroll(direction: 'up' | 'down' | 'top' | 'bottom', distance?: number): this {
+  scroll(pages?: number): this;
+  /** @deprecated The browser only scrolls down by pages; use `scroll(pages)`. */
+  scroll(direction: 'up' | 'down' | 'top' | 'bottom', distance?: number): this;
+  scroll(pagesOrDirection: number | string = 1, _distance?: number): this {
+    let pages = pagesOrDirection;
+    if (typeof pagesOrDirection === 'string') {
+      // The old scroll(direction, distance) never worked: the browser action
+      // takes a number of pages to scroll down.
+      warn('scroll(direction, distance) is replaced by scroll(pages); scrolling down one page.');
+      pages = 1;
+    }
     this.addAction({
       action: 'scroll',
-      args: [{ direction, distance }],
+      args: [Math.max(1, Math.floor(Number(pages) || 1))],
     });
     return this;
   }
 
   /**
-   * Set cookies
+   * @deprecated Not supported: Maxun robots cannot set cookies. Kept so old code runs.
    */
-  setCookies(cookies: Array<{ name: string; value: string; domain?: string }>): this {
-    if (this.currentStep) {
-      this.currentStep.where.cookies = cookies;
-    }
+  setCookies(_cookies: Array<{ name: string; value: string; domain?: string }>): this {
+    warn(
+      'setCookies() is not supported by Maxun and has no effect. ' +
+        '(It used to add a page condition that could stop the step from running.)'
+    );
     return this;
   }
 
   /**
-   * Set robot mode (normal or bulk)
+   * @deprecated The server ignores robot mode.
    */
-  mode(mode: RobotMode): this {
-    this.meta.mode = mode;
+  mode(_mode: RobotMode): this {
+    warn('mode() has no effect; the Maxun server does not use a robot mode.');
     return this;
   }
 
@@ -209,15 +221,11 @@ export abstract class WorkflowBuilder {
    */
   protected addAction(action: What): void {
     if (!this.currentStep) {
-      // Create a new step if none exists
-      this.addStep({
-        where: {},
-        what: [action],
-      });
-    } else {
-      // Use push to add to end - top-to-bottom execution
-      this.currentStep.what.push(action);
+      throw new Error(`Call navigate(url) before ${action.action}().`);
     }
+    if (action.name === undefined) delete action.name;
+    // Use push to add to end - top-to-bottom execution
+    this.currentStep.what.push(action);
   }
 
   /**
@@ -232,7 +240,7 @@ export abstract class WorkflowBuilder {
    */
   getWorkflow(): { meta: Partial<RobotMeta>; workflow: Workflow } {
     return {
-      meta: this.meta,
+      meta: { ...this.meta },
       workflow: this.workflow
     };
   }

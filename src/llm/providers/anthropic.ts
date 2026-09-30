@@ -25,7 +25,7 @@ export class AnthropicProvider extends BaseLLMProvider {
       const response = await this.client.messages.create({
         model: this.config.model || 'claude-3-5-sonnet-20241022',
         max_tokens: this.config.maxTokens || 4096,
-        temperature: this.config.temperature || 0.7,
+        temperature: this.config.temperature ?? 0.7,
         system: systemMessage?.content,
         messages: userMessages.map(msg => ({
           role: msg.role as 'user' | 'assistant',

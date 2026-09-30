@@ -1,2 +1,5 @@
 MAXUN_API_KEY=
+# Self-hosted Maxun (the default). For Maxun Cloud use https://app.maxun.dev/api/sdk/
 MAXUN_BASE_URL=http://localhost:8080/api/sdk
+# Optional, Maxun Cloud teams only
+MAXUN_TEAM_ID=

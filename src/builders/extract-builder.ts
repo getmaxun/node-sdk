@@ -26,6 +26,9 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
    * Capture specific text fields from the page
    */
   captureText(fields: ExtractFields, name?: string): this {
+    if (!fields || Object.keys(fields).length === 0) {
+      throw new Error('captureText() needs at least one { fieldName: selector } pair');
+    }
     // Pass fields directly as plain selectors
     this.addAction({
       action: 'scrapeSchema',
@@ -47,6 +50,9 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
    * @param name - Optional action name
    */
   captureList(config: ExtractListConfig, name?: string): this {
+    if (!config?.selector) {
+      throw new Error('captureList() needs a selector for the repeated item');
+    }
     const scrapeListConfig: any = {
       itemSelector: config.selector,
       maxItems: config.maxItems || 100
@@ -69,6 +75,16 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
   }
 
   /**
+   * Save this robot on Maxun and return it.
+   */
+  build(): Promise<Robot> {
+    if (!this.extractor) {
+      return Promise.reject(new Error('Builder not properly initialized. Use maxun.extract(name) to create a builder.'));
+    }
+    return this.extractor.build(this);
+  }
+
+  /**
    * Make the builder awaitable - converts builder to Robot instance
    */
   then<TResult1 = Robot, TResult2 = never>(
@@ -82,7 +98,7 @@ export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot
     }
 
     // Build and convert to Robot
-    return this.extractor.build(this).then(onfulfilled, onrejected);
+    return this.build().then(onfulfilled, onrejected);
   }
 }
 

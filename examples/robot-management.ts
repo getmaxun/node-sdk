@@ -1,73 +1,40 @@
 /**
- * Robot Management Example
- *
- * This example demonstrates:
- * - Listing all robots
- * - Getting a specific robot by ID
- * - Updating robot metadata
- * - Getting runs and execution history
- * - Deleting robots
+ * List, find, rename, run, inspect, copy and delete robots.
  */
-
 import 'dotenv/config';
-import { Extract } from 'maxun-sdk';
+import { Maxun, NotFoundError } from 'maxun-sdk';
+
+const maxun = new Maxun();
 
 async function main() {
-  const extractor = new Extract({
-    apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL
-  });
+  const robot = await maxun.scrape('Books Scraper', 'https://books.toscrape.com');
+
+  console.log((await maxun.robots.list()).map((r) => r.name)); // every robot
+  console.log((await maxun.scrape.list()).map((r) => r.name)); // only scrape robots
+  let same = await maxun.robots.find('Books Scraper'); // by name
+  same = await maxun.robots.get(robot.id); // by id
+  console.log(String(same), same.url, same.formats);
+
+  await robot.rename('Books Scraper (renamed)');
+
+  const result = await robot.run();
+  const runs = await robot.getRuns(); // newest first
+  const latest = await robot.getLatestRun();
+  const run = await robot.getRun(result.runId);
+  console.log(runs.length, latest?.runId, run.status);
+
+  const copy = await robot.duplicate('https://books.toscrape.com/catalogue/page-2.html');
+  await copy.delete();
+  await robot.delete();
 
   try {
-    const robot = await extractor
-      .create('Books Scraper')
-      .navigate('https://books.toscrape.com/')
-      .captureList({
-        selector: 'article.product_pod',
-        maxItems: 10
-      });
-
-    console.log(`Robot created: ${robot.id}`);
-
-    const allRobots = await extractor.getRobots();
-    console.log(`\nTotal robots: ${allRobots.length}`);
-
-    const fetchedRobot = await extractor.getRobot(robot.id);
-    console.log(`Fetched robot: ${fetchedRobot.name}`);
-
-    await robot.update({
-      meta: { name: 'Updated Books Scraper' }
-    });
-    await robot.refresh();
-    console.log(`Updated name: ${robot.name}`);
-
-    // Run the robot
-    const result = await robot.run();
-    console.log(`\nRun completed: ${result.runId}`);
-    console.log(`Items extracted: ${result.data.listData?.length || 0}`);
-
-    const runs = await robot.getRuns();
-    console.log(`\nTotal runs: ${runs.length}`);
-
-    const latestRun = await robot.getLatestRun();
-    console.log(`Latest run: ${latestRun?.runId}`);
-
-    const specificRun = await robot.getRun(result.runId);
-    console.log(`Specific run status: ${specificRun.status}`);
-
-    // Delete the robot
-    await robot.delete();
-    console.log('\nRobot deleted');
-
-  } catch (error: any) {
-    console.error('Error:', error.message);
-    process.exit(1);
+    await maxun.robots.get(robot.id);
+  } catch (error) {
+    if (error instanceof NotFoundError) console.log('Deleted');
   }
 }
 
-if (!process.env.MAXUN_API_KEY) {
-  console.error('Error: MAXUN_API_KEY environment variable is required');
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
-}
-
-main();
+});

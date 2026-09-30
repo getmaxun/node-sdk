@@ -1,10 +1,11 @@
 /**
- * Scrape - Main class for the Scrape SDK
+ * Scrape - turn a single page into Markdown, HTML, text, links, a summary or screenshots.
  */
 
-import { Client, buildLlmPayload } from './client/maxun-client';
-import { Config, WorkflowFile, RobotData, Format, LlmOptions } from './types';
+import { buildLlmPayload } from './client/maxun-client';
+import { Format, LlmOptions, RobotType, SCRAPE_FORMATS, WorkflowFile } from './types';
 import { Robot } from './robot/robot';
+import { Resource } from './resource';
 
 export interface ScrapeOptions extends LlmOptions {
   /**
@@ -23,42 +24,48 @@ export interface ScrapeOptions extends LlmOptions {
 
   /**
    * Optional Smart Queries prompt. After scraping, the LLM analyzes the page
-   * and returns an answer based on your instructions.
-   * Adds 2 extra credits per run on top of the base 1 scrape credit.
+   * and answers it on every run; read the answer from `result.smartQueryResult`.
    */
   smartQueries?: string;
-  /** Monitor this robot for changes between successful runs. */
+  /** Compare every run with the previous successful run. */
   monitor?: boolean;
 }
 
-export class Scrape {
-  private client: Client;
-
-  constructor(config: Config) {
-    this.client = new Client(config);
+export function checkFormats(formats: Format[] | undefined, allowed: string[] = SCRAPE_FORMATS): Format[] | undefined {
+  if (!formats) return undefined;
+  const list = Array.isArray(formats) ? formats : [formats as unknown as Format];
+  const invalid = list.filter((f) => !allowed.includes(f));
+  if (invalid.length > 0) {
+    throw new Error(`Invalid formats: ${invalid.join(', ')}. Use any of: ${allowed.join(', ')}.`);
   }
+  return list;
+}
+
+export class Scrape extends Resource {
+  protected readonly robotTypes: RobotType[] = ['scrape'];
 
   /**
-   * Create a new scraping robot
-   * @param name - Name of the scraping robot
-   * @param url - URL to scrape
-   * @param options - Optional scraping options (formats)
-   * @returns Promise<Robot>
+   * Create a scrape robot. Run it with `await robot.run()`.
+   *
+   * @param name - Robot name. Creating again with the same name and settings
+   *   returns the existing robot; different settings raise ConflictError.
+   * @param url - Page to scrape
+   * @param options - formats, smartQueries, monitor and (self-hosted only) llm* settings
    */
   async create(name: string, url: string, options?: ScrapeOptions): Promise<Robot> {
     if (!url) {
       throw new Error('URL is required');
     }
 
+    const smartQueries = options?.smartQueries?.trim();
     const workflowFile: WorkflowFile = {
       meta: {
         name,
-        id: `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        robotType: 'scrape',
+        type: 'scrape',
         url,
-        formats: options?.formats || ['markdown'],
+        formats: checkFormats(options?.formats) || ['markdown'],
         ...(options?.monitor !== undefined ? { monitor: options.monitor } : {}),
-        ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
+        ...(smartQueries ? { promptInstructions: smartQueries } : {}),
         ...buildLlmPayload(options || {}),
       } as any,
       workflow: [],
