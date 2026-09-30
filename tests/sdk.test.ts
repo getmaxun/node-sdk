@@ -554,3 +554,28 @@ describe('legacy classes', () => {
     assert.equal(step.where.cookies, undefined);
   });
 });
+
+// ---------- review follow-ups ----------
+
+describe('edge cases', () => {
+  test('search ignores fields explicitly set to undefined', async () => {
+    server.on('POST /search', { status: 201, body: { data: robotRecord('r1', 'search') } });
+    await maxun.search('Q', { query: 'q', mode: undefined, limit: undefined });
+    assert.deepEqual(server.last('POST /search').json.searchConfig, { query: 'q', mode: 'scrape', limit: 10 });
+  });
+
+  test('callable resources still behave like the resource object', () => {
+    assert.ok(maxun.scrape instanceof Scrape);
+    assert.equal(maxun.scrape.constructor, Scrape);
+    assert.equal(typeof maxun.scrape.list, 'function');
+    assert.equal(typeof (maxun.scrape as any).call, 'function');
+    assert.equal(maxun.scrape.client, maxun.client);
+  });
+
+  test('Client.executeRobot returns a RunResult', async () => {
+    server.on('POST /robots/r1/execute', { body: { data: RUN_RESULT } });
+    const result = await maxun.client.executeRobot('r1');
+    assert.ok(result instanceof RunResult);
+    assert.equal(result.markdown, '# Hi');
+  });
+});

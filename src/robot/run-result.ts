@@ -19,6 +19,9 @@ import { ChangedPages, RunResultData, RunStatus } from '../types';
  * - `smartQueryResult` - the LLM's answer to a Smart Query
  * - `documentData` - data pulled from a file by a document-extract robot
  * - `changedPages` - crawl monitoring: added, removed and changed page URLs
+ *
+ * The shortcuts are getters, so they are not copied by `{ ...result }` or
+ * `JSON.stringify(result)`; the raw fields are.
  */
 export class RunResult implements RunResultData {
   runId!: string;
@@ -28,7 +31,6 @@ export class RunResult implements RunResultData {
   hasChanges?: boolean;
   changedFormats?: string[];
   changedPages?: ChangedPages;
-  [key: string]: any;
 
   constructor(raw: RunResultData) {
     Object.assign(this, raw);

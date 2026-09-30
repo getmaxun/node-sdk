@@ -402,14 +402,18 @@ Existing code keeps working. `new Extract(config)`, `new Scrape(config)`, `new C
   - Waits for the run to finish instead of giving up after 5 minutes.
   - Accepts `formats` and `smartQueries`.
   - `params`/`webhook` were never used by the server; passing them now warns.
-  - Returns a `RunResult` with shortcuts; the old fields are unchanged.
+  - Returns a `RunResult` class with shortcuts; the old fields are unchanged. `RunResult` used to be an interface, so an object literal typed as `RunResult` no longer compiles; use the `RunResultData` type for raw objects. `Client.executeRobot()` returns a `RunResult` too. The shortcuts are getters, so `{ ...result }` and `JSON.stringify(result)` keep only the raw fields.
+  - Without a `timeout`, only making the connection is time-limited (by the client `timeout`, 30s by default); an open run is never cut off.
 - **`Extract.getRobots()`** returned nothing, because it read a field the server doesn't set. It now works, and every resource has `list()`, `get()` and `delete()`.
 - **Builder:**
   - `scroll()` now takes a number of pages; the old `scroll(direction, distance)` did nothing.
   - `setCookies()` and `mode()` were never supported by the server; they now warn and do nothing.
   - Steps added before `navigate()` throw an error.
-- **Crawl config:** it now has working defaults. Before, leaving out `limit` or `maxDepth` crawled nothing.
-- **Config:** `apiKey`, `baseUrl` and `teamId` fall back to `MAXUN_API_KEY`, `MAXUN_BASE_URL` and `MAXUN_TEAM_ID`.
+- **Crawl and search defaults:**
+  - Crawl configs now have working defaults. Before, leaving out `limit` or `maxDepth` crawled nothing. Because the defaults are now sent, re-creating a crawl robot from 0.0.x code under the same name can throw `ConflictError` (its stored settings differ); use a new name or delete the old robot.
+  - Search now sends `mode: 'scrape'` and `limit: 10` when you leave them out. Leaving out `mode` already scraped each result on the server; leaving out `limit` returned only the first page of results.
+- **Config:** `apiKey`, `baseUrl` and `teamId` fall back to `MAXUN_API_KEY`, `MAXUN_BASE_URL` and `MAXUN_TEAM_ID`. Creating a client with no API key anywhere now throws right away instead of failing on the first request.
+- **Types:** `Config.apiKey`, `ScheduleConfig.timezone`, `CrawlConfig.mode` and `RobotData.recording.meta` are now optional, since the SDK fills them in. Code that reads them as always present may need a `!` or a default. `RobotType` includes `doc-extract` and `doc-parse`, and pagination accepts `type: 'none'`.
 - **Return values:**
   - `robot.getWebhooks()` returns `[]` instead of `null` when there are none.
   - `robot.schedule()` returns the saved schedule and `robot.addWebhook()` returns the saved webhook; both used to return nothing.

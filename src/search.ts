@@ -33,10 +33,8 @@ export class Search extends Resource {
     }
 
     const { timeRange, ...rest } = input;
-    const config: SearchConfig = { mode: 'scrape', limit: 10, ...rest };
-    for (const key of Object.keys(config) as (keyof SearchConfig)[]) {
-      if (config[key] === undefined) delete config[key];
-    }
+    const given = Object.fromEntries(Object.entries(rest).filter(([, value]) => value !== undefined));
+    const config: SearchConfig = { mode: 'scrape', limit: 10, ...given } as SearchConfig;
     if (config.mode !== 'discover' && config.mode !== 'scrape') {
       throw new Error("mode must be 'discover' or 'scrape'");
     }

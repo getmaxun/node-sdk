@@ -2,6 +2,7 @@
  * Maxun - the main entry point.
  */
 
+import { inspect } from 'util';
 import { Client } from './client/maxun-client';
 import { ExtractBuilder } from './builders/extract-builder';
 import { Crawl, CrawlCreateOptions } from './crawl';
@@ -57,7 +58,10 @@ function callable<R extends object, F extends (...args: any[]) => any>(resource:
   const target = (() => undefined) as any;
   return new Proxy(target, {
     apply: (_target, _thisArg, args) => call(...args),
-    get: (_target, prop) => {
+    get: (target, prop) => {
+      if (prop === inspect.custom) return () => resource;
+      if (prop === 'constructor') return (resource as any).constructor;
+      if (!(prop in resource) && prop in Function.prototype) return Reflect.get(target, prop);
       const value = (resource as any)[prop];
       return typeof value === 'function' ? value.bind(resource) : value;
     },

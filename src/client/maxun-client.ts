@@ -38,6 +38,30 @@ import {
   WEBHOOK_EVENTS,
 } from '../types';
 import { loadDocument, resolveConfig, warn } from '../utils';
+import { RunResult } from '../robot/run-result';
+
+/**
+ * HTTP agents that give up if the connection itself is not made within `ms`,
+ * but never time out a connection that is open and waiting for a long run.
+ */
+function connectTimeoutAgents(ms: number): { httpAgent: http.Agent; httpsAgent: https.Agent } {
+  const limit = <A extends http.Agent>(agent: A): A => {
+    const create = (agent as any).createConnection.bind(agent);
+    (agent as any).createConnection = (options: any, callback: any) => {
+      const socket = create(options, callback);
+      if (socket && ms > 0) {
+        socket.setTimeout(ms, () => socket.destroy(new Error(`connection not made within ${ms}ms`)));
+        socket.once('connect', () => socket.setTimeout(0));
+      }
+      return socket;
+    };
+    return agent;
+  };
+  return {
+    httpAgent: limit(new http.Agent({ keepAlive: false })),
+    httpsAgent: limit(new https.Agent({ keepAlive: false })),
+  };
+}
 
 /**
  * Serialises LLM options, omitting anything not explicitly set.
@@ -157,12 +181,14 @@ function errorFromResponse(status: number, body: any, url: string): MaxunError {
 export class Client {
   private axios: AxiosInstance;
   private apiKey: string;
+  private connectTimeout: number;
   readonly baseUrl: string;
 
   constructor(config?: Config) {
     const resolved = resolveConfig(config);
     this.apiKey = resolved.apiKey;
     this.baseUrl = resolved.baseUrl;
+    this.connectTimeout = resolved.timeout;
 
     this.axios = axios.create({
       baseURL: resolved.baseUrl,
@@ -332,7 +358,7 @@ export class Client {
    *
    * @throws RunFailedError if the run fails or is aborted.
    */
-  async executeRobot(robotId: string, options: ExecutionOptions = {}): Promise<RunResultData> {
+  async executeRobot(robotId: string, options: ExecutionOptions = {}): Promise<RunResult> {
     if (options.params !== undefined || options.webhook !== undefined) {
       warn(
         'run({ params, webhook }) was never used by the server and is ignored. ' +
@@ -350,13 +376,14 @@ export class Client {
         url: `/robots/${robotId}/execute`,
         data: payload,
         // Runs can legitimately take a long time (the server waits up to 3
-        // hours), so by default there is no timeout.
+        // hours), so by default only making the connection is time-limited.
         timeout: options.timeout || 0,
+        ...(options.timeout ? {} : connectTimeoutAgents(this.connectTimeout)),
       });
       if (!body.data) {
         throw new MaxunError('Failed to execute robot');
       }
-      return body.data;
+      return new RunResult(body.data);
     } catch (error) {
       if (options.timeout && error instanceof MaxunError && /timed out/.test(error.message)) {
         throw new MaxunError(

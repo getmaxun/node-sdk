@@ -79,7 +79,7 @@ export class Robot {
    * @throws RunFailedError if the run fails or is aborted.
    */
   async run(options?: ExecutionOptions): Promise<RunResult> {
-    const result = new RunResult(await this.client.executeRobot(this.id, options));
+    const result = await this.client.executeRobot(this.id, options);
     await this.addMissingOutputs(result, (options?.formats as Format[]) || this.formats);
     if (this.type === 'crawl' && this.isMonitoring) {
       await this.compareCrawlRun(result);
