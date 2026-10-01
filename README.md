@@ -1,5 +1,7 @@
 # [Maxun Node.js SDK](https://docs.maxun.dev/sdk/node-sdk/sdk-overview)
 
+> ⚠️ Please upgrade to the latest version 0.0.15 for the best experience.
+
 The Maxun Node.js SDK turns websites and documents into structured data from your JavaScript or TypeScript code. You create **robots** (saved, reusable jobs) and run them whenever you need fresh data.
 
 ```javascript
