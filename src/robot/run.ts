@@ -14,7 +14,7 @@ const firstContent = (value: any): string | undefined =>
  * Build a RunResult from a stored run, the same way the server builds the
  * result of `robot.run()`.
  */
-export function resultFromRun(raw: RunData): RunResult {
+export function resultFromRun(raw: RunData, monitored?: boolean): RunResult {
   const output: Record<string, any> = raw.serializableOutput || {};
   const scrape: Record<string, any> = output.scrape || {};
 
@@ -56,7 +56,7 @@ export function resultFromRun(raw: RunData): RunResult {
       documentData: output.scrapeDoc?.data,
     },
     screenshots: Object.values(raw.binaryOutput || {}),
-  });
+  }, { monitored });
 }
 
 /** The fields a run shows when printed or serialised. */
@@ -91,9 +91,12 @@ export class Run implements RunSummary {
   /** ISO 8601, UTC; `null` while the run is still going. */
   finishedAt!: string | null;
   private raw!: RunData;
+  private monitored?: boolean;
 
-  constructor(raw: RunData) {
+  /** @param monitored Whether the robot has change monitoring on (decides whether `run.result` shows `hasChanges`). */
+  constructor(raw: RunData, monitored?: boolean) {
     Object.defineProperty(this, 'raw', { value: raw || ({} as RunData), enumerable: false, writable: true });
+    Object.defineProperty(this, 'monitored', { value: monitored, enumerable: false, writable: true });
     this.id = this.raw.id;
     this.runId = this.raw.runId;
     this.robotId = this.raw.robotMetaId;
@@ -105,7 +108,7 @@ export class Run implements RunSummary {
 
   /** The run's output, in the same shape `robot.run()` returns. */
   get result(): RunResult {
-    return resultFromRun(this.raw);
+    return resultFromRun(this.raw, this.monitored);
   }
 
   get hasChanges(): boolean {

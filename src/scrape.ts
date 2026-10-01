@@ -6,7 +6,7 @@ import { buildLlmPayload } from './client/maxun-client';
 import { Format, LlmOptions, RobotType, SCRAPE_FORMATS, WorkflowFile } from './types';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
-import { autoName, checkUrl, describeUrl } from './naming';
+import { checkName, checkUrl } from './naming';
 
 export interface ScrapeOptions extends LlmOptions {
   /**
@@ -32,16 +32,13 @@ export interface ScrapeOptions extends LlmOptions {
   monitor?: boolean;
 }
 
-/** Options for `maxun.scrape(url, options)`. */
-export interface ScrapeCallOptions extends ScrapeOptions {
-  /** Robot name. Defaults to one made from the URL and settings, so the same call returns the same robot. */
-  name?: string;
-}
+/** Options for `maxun.scrape(name, url, options)`. */
+export type ScrapeCallOptions = ScrapeOptions;
 
 /** Reject an options argument that is not an object (usually the old name-first argument order). */
 export function checkOptions(options: unknown, call: string): void {
   if (options !== undefined && (options === null || typeof options !== 'object' || Array.isArray(options))) {
-    throw new TypeError(`${call} takes an options object as its second argument. Pass the robot name as { name }.`);
+    throw new TypeError(`${call} takes the settings as one options object, e.g. { formats: ['markdown'] }.`);
   }
 }
 
@@ -54,13 +51,13 @@ export function checkKeys(options: object, allowed: string[], call: string): voi
 }
 
 const LLM_KEYS = ['llmProvider', 'llmModel', 'llmApiKey', 'llmBaseUrl'];
-export const SCRAPE_KEYS = ['name', 'formats', 'smartQueries', 'monitor', ...LLM_KEYS];
+export const SCRAPE_KEYS = ['formats', 'smartQueries', 'monitor', ...LLM_KEYS];
 export const CRAWL_KEYS = [
-  'name', 'mode', 'limit', 'maxDepth', 'includePaths', 'excludePaths', 'useSitemap', 'followLinks',
+  'mode', 'limit', 'maxDepth', 'includePaths', 'excludePaths', 'useSitemap', 'followLinks',
   'respectRobots', 'formats', 'monitor', ...LLM_KEYS,
 ];
-export const SEARCH_KEYS = ['name', 'mode', 'limit', 'timeRange', 'formats', ...LLM_KEYS];
-export const PROMPT_KEYS = ['prompt', 'name', 'monitor', ...LLM_KEYS];
+export const SEARCH_KEYS = ['mode', 'limit', 'timeRange', 'formats', ...LLM_KEYS];
+export const PROMPT_KEYS = ['prompt', 'monitor', ...LLM_KEYS];
 
 export function checkFormats(formats: Format[] | undefined, allowed: string[] = SCRAPE_FORMATS): Format[] | undefined {
   if (!formats) return undefined;
@@ -107,25 +104,17 @@ export class Scrape extends Resource {
   }
 
   /**
-   * Create a scrape robot from a URL. Same as `maxun.scrape(url, options)`:
+   * Create a scrape robot. Same as `maxun.scrape(name, url, options)`:
    *
-   *     const robot = await maxun.scrape('https://maxun.dev', { formats: ['markdown', 'html'] });
+   *     const robot = await maxun.scrape('Maxun home', 'https://maxun.dev', { formats: ['markdown', 'html'] });
    */
-  async fromUrl(url: string, options: ScrapeCallOptions = {}): Promise<Robot> {
-    checkOptions(options, 'maxun.scrape(url, options)');
-    checkKeys(options, SCRAPE_KEYS, 'maxun.scrape(url, options)');
-    const target = checkUrl(url, 'maxun.scrape(url, options)');
-    const { name, ...rest } = options;
-    const settings = {
-      type: 'scrape',
-      url: target,
-      formats: checkFormats(rest.formats) || ['markdown'],
-      smartQueries: rest.smartQueries?.trim() || undefined,
-      monitor: rest.monitor,
-      ...buildLlmPayload(rest),
-    };
-    return await this.createReusing(name, autoName('Scrape', describeUrl(target), settings), (robotName) =>
-      this.create(robotName, target, rest)
-    );
+  async fromUrl(name: string, url: string, options: ScrapeCallOptions = {}): Promise<Robot> {
+    const call = 'maxun.scrape(name, url, options)';
+    const target = checkUrl(url, call, name);
+    const robotName = checkName(name, call);
+    checkOptions(options, call);
+    checkKeys(options, SCRAPE_KEYS, call);
+    checkFormats(options.formats);
+    return await this.create(robotName, target, options);
   }
 }

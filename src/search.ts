@@ -6,8 +6,7 @@ import { Format, LlmOptions, RobotType, SearchConfig, SearchMode, SearchTimeRang
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
 import { checkFormats, checkKeys, checkOptions, SEARCH_KEYS } from './scrape';
-import { autoName, shorten } from './naming';
-import { buildLlmPayload } from './client/maxun-client';
+import { checkName } from './naming';
 import { warn } from './utils';
 
 export interface SearchCreateOptions extends LlmOptions {
@@ -15,7 +14,7 @@ export interface SearchCreateOptions extends LlmOptions {
   formats?: Format[];
 }
 
-/** Options for `maxun.search(query, options)`. */
+/** Options for `maxun.search(name, query, options)`. */
 export interface SearchCallOptions extends SearchCreateOptions {
   /** `'discover'` returns titles, URLs and snippets; `'scrape'` (default) also scrapes every result. */
   mode?: SearchMode;
@@ -23,8 +22,6 @@ export interface SearchCallOptions extends SearchCreateOptions {
   limit?: number;
   /** Only results from the past day, week, month or year. */
   timeRange?: SearchTimeRange;
-  /** Robot name. Defaults to one made from the query and settings. */
-  name?: string;
 }
 
 export class Search extends Resource {
@@ -71,24 +68,20 @@ export class Search extends Resource {
   }
 
   /**
-   * Create a search robot from a query. Same as `maxun.search(query, options)`:
+   * Create a search robot. Same as `maxun.search(name, query, options)`:
    *
-   *     const robot = await maxun.search('AI model releases', { mode: 'discover', timeRange: 'week' });
+   *     const robot = await maxun.search('AI news', 'AI model releases', { mode: 'discover', timeRange: 'week' });
    */
-  async fromQuery(query: string, options: SearchCallOptions = {}): Promise<Robot> {
-    checkOptions(options, 'maxun.search(query, options)');
-    checkKeys(options, SEARCH_KEYS, 'maxun.search(query, options)');
+  async fromQuery(name: string, query: string, options: SearchCallOptions = {}): Promise<Robot> {
+    const call = 'maxun.search(name, query, options)';
+    const robotName = checkName(name, call);
     if (typeof query !== 'string' || !query.trim()) {
-      throw new Error("maxun.search(query, options) needs a search query, e.g. maxun.search('AI news').");
+      throw new Error("maxun.search(name, query, options) needs a search query, e.g. maxun.search('AI news', 'AI model releases').");
     }
-    const { name, mode = 'scrape', limit = 10, timeRange, formats, ...llm } = options;
+    checkOptions(options, call);
+    checkKeys(options, SEARCH_KEYS, call);
+    const { mode = 'scrape', limit = 10, timeRange, formats, ...llm } = options;
     const searchConfig: SearchConfig = { query: query.trim(), mode, limit, ...(timeRange ? { timeRange } : {}) };
-    const settings = {
-      type: 'search',
-      searchConfig,
-      formats: checkFormats(formats) || (mode === 'scrape' ? ['markdown'] : undefined),
-      ...buildLlmPayload(llm),
-    };
-    return await this.create(name || autoName('Search', shorten(query), settings), searchConfig, { formats, ...llm });
+    return await this.create(robotName, searchConfig, { formats, ...llm });
   }
 }

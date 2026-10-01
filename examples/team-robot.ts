@@ -8,7 +8,7 @@ import { Maxun } from 'maxun-sdk';
 const maxun = new Maxun({ teamId: process.env.MAXUN_TEAM_ID });
 
 async function main() {
-  const robot = await maxun.scrape('https://example.com', { name: 'Team Scraper' });
+  const robot = await maxun.scrape('Team Scraper', 'https://example.com');
   console.log(await maxun.robots.list());
   console.log((await robot.run()).status);
 }

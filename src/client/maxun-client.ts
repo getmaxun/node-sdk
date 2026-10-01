@@ -366,11 +366,16 @@ export class Client {
   }
 
   /**
-   * Run a robot and wait for it to finish. Returns the raw run result.
+   * Run a robot and wait for it to finish.
    *
    * @throws RunFailedError if the run fails or is aborted.
    */
   async executeRobot(robotId: string, options: ExecutionOptions = {}): Promise<RunResult> {
+    return new RunResult(await this.executeRaw(robotId, options));
+  }
+
+  /** Like `executeRobot()`, but returns the server's raw response data. */
+  async executeRaw(robotId: string, options: ExecutionOptions = {}): Promise<RunResultData> {
     if (options.params !== undefined || options.webhook !== undefined) {
       warn(
         'run({ params, webhook }) was never used by the server and is ignored. ' +
@@ -395,7 +400,7 @@ export class Client {
       if (!body.data) {
         throw new MaxunError('Failed to execute robot');
       }
-      return new RunResult(body.data);
+      return body.data;
     } catch (error) {
       if (options.timeout && error instanceof MaxunError && /timed out/.test(error.message)) {
         throw new MaxunError(

@@ -12,6 +12,7 @@ import {
   ExecutionOptions,
   Format,
   RunData,
+  RunResultData,
   MaxunError,
 } from '../types';
 import { inspect } from 'util';
@@ -92,16 +93,17 @@ export class Robot {
    * @throws RunFailedError if the run fails or is aborted.
    */
   async run(options?: ExecutionOptions): Promise<RunResult> {
-    const result = await this.client.executeRobot(this.id, options);
+    const raw = await this.client.executeRaw(this.id, options);
+    const result: RunResultData = { ...raw, data: { ...(raw.data || {}) } };
     await this.addMissingOutputs(result, (options?.formats as Format[]) || this.formats);
     if (this.type === 'crawl' && this.isMonitoring) {
       await this.compareCrawlRun(result);
     }
-    return result;
+    return new RunResult(result, { monitored: this.isMonitoring });
   }
 
   /** The run endpoint leaves out links and document-extract data, so read them from the stored run. */
-  private async addMissingOutputs(result: RunResult, formats: string[]): Promise<void> {
+  private async addMissingOutputs(result: RunResultData, formats: string[]): Promise<void> {
     const wantsLinks = formats.includes('links');
     const isDocument = this.type === 'doc-extract';
     if (!(wantsLinks || isDocument) || !result.runId) return;
@@ -123,7 +125,7 @@ export class Robot {
   }
 
   /** The server does not compare crawl runs, so the SDK does it. */
-  private async compareCrawlRun(result: RunResult): Promise<void> {
+  private async compareCrawlRun(result: RunResultData): Promise<void> {
     if (!result.runId) return;
     let runs: RunData[];
     try {
@@ -143,7 +145,7 @@ export class Robot {
     const currentPages = crawlPages(output.crawl);
     const { changedFormats, pages } = compareCrawl(
       crawlPages(previous.serializableOutput?.crawl),
-      currentPages.length ? currentPages : result.crawlData
+      currentPages.length ? currentPages : result.data?.crawlData || []
     );
     result.hasChanges = changedFormats.length > 0;
     result.changedFormats = changedFormats;
@@ -155,7 +157,7 @@ export class Robot {
    * its output is in `run.result`.
    */
   async getRuns(): Promise<Run[]> {
-    return (await this.rawRuns()).map((raw) => new Run(raw));
+    return (await this.rawRuns()).map((raw) => new Run(raw, this.isMonitoring));
   }
 
   private async rawRuns(): Promise<RunData[]> {
@@ -174,7 +176,7 @@ export class Robot {
    * Get a specific run
    */
   async getRun(runId: string): Promise<Run> {
-    return new Run(await this.client.getRun(this.id, runId));
+    return new Run(await this.client.getRun(this.id, runId), this.isMonitoring);
   }
 
   /**

@@ -13,7 +13,7 @@ import { Maxun } from 'maxun-sdk';
 
 const maxun = new Maxun({ apiKey: 'your-api-key' });
 
-const robot = await maxun.scrape('https://maxun.dev', { formats: ['markdown', 'html'] });
+const robot = await maxun.scrape('Maxun home', 'https://maxun.dev', { formats: ['markdown', 'html'] });
 const result = await robot.run();
 console.log(result.markdown);
 ```
@@ -50,36 +50,30 @@ Everything hangs off `maxun`:
 
 | Call | Creates | Result is in |
 |---|---|---|
-| `maxun.scrape(url, options)` | a robot that turns one page into markdown/html/text/links/summary/screenshots | `result.markdown`, `.html`, `.text`, `.links`, `.summary`, `.screenshots` |
-| `maxun.extract(url, { prompt })` or `maxun.extract(url)` | a robot that captures specific data, by selectors or from a prompt | `result.textData`, `result.listData` |
-| `maxun.crawl(url, options)` | a robot that visits many pages of a site | `result.crawlData` |
-| `maxun.search(query, options)` | a robot that searches the web (DuckDuckGo) | `result.searchData` |
-| `maxun.documents.extract(file, prompt)` / `.parse(file)` | a robot that reads a PDF, DOCX, XLSX, CSV, JPG or PNG | `result.documentData` / `result.markdown` etc. |
+| `maxun.scrape(name, url, options)` | a robot that turns one page into markdown/html/text/links/summary/screenshots | `result.markdown`, `.html`, `.text`, `.links`, `.summary`, `.screenshots` |
+| `maxun.extract(name, url, { prompt })` or `maxun.extract(name, url)` | a robot that captures specific data, by selectors or from a prompt | `result.textData`, `result.listData` |
+| `maxun.crawl(name, url, options)` | a robot that visits many pages of a site | `result.crawlData` |
+| `maxun.search(name, query, options)` | a robot that searches the web (DuckDuckGo) | `result.searchData` |
+| `maxun.documents.extract(name, file, prompt)` / `.parse(name, file)` | a robot that reads a PDF, DOCX, XLSX, CSV, JPG or PNG | `result.documentData` / `result.markdown` etc. |
 | `maxun.robots` | nothing; lists, finds and deletes robots of any type | |
 
-Each call takes what to work on first (a URL, a query or a file), then the settings as one options object. Unknown options throw instead of being silently sent. It returns a `Robot`, saved on your account; run it as often as you like.
+Each call takes the robot's name first (it is what Maxun shows for the robot), then what to work on (a URL, a query or a file), then the settings as one options object. Unknown options throw instead of being silently sent. It returns a `Robot`, saved on your account; run it as often as you like.
 
-**Robot names.** Every call accepts `{ name }`. Leave it out and the SDK names the robot after what it does plus a short fingerprint of its settings, e.g. `Scrape: maxun.dev [3f2a1c]`. So:
-
-- Running the same call again reuses the same robot instead of creating a duplicate. This holds even if you've edited that robot since, or a prompt robot found a different page the second time.
-- Changing any setting gives a new name, so it never clashes with the old robot.
-- The Python SDK generates the same names, so both SDKs share robots.
-
-If you choose your own names, reuse behaves differently per robot type:
+**Reusing a name** behaves differently per robot type:
 
 - Scrape, crawl and prompt-extract robots: the same name with the same settings returns the existing robot; different settings throw `ConflictError`.
 - Selector-extract robots: the same name and URL returns the existing robot **unchanged, even if your steps differ**. The SDK warns when this happens. Use a new name or delete the old robot to save new steps.
 - Document robots: an existing name throws `ConflictError`.
 - Search robots: names are not checked, so every call makes a new robot.
 
-The older style, `maxun.scrape.create(name, url, options)` and `new Scrape(config).create(...)`, still works.
+`maxun.scrape.create(name, url, options)` and the 0.0.x style `new Scrape(config).create(...)` still work.
 
 ## What you can build
 
 ### Scrape
 
 ```ts
-const robot = await maxun.scrape('https://example.com/pricing', {
+const robot = await maxun.scrape('Pricing page', 'https://example.com/pricing', {
   formats: ['markdown', 'links', 'screenshot-fullpage'],
 });
 const result = await robot.run();
@@ -93,12 +87,11 @@ result.screenshots;  // list
 | `formats` | `['markdown']` | any of `markdown`, `html`, `text`, `links`, `summary`, `screenshot-visible`, `screenshot-fullpage` |
 | `smartQueries` | none | a question the LLM answers about the page on every run |
 | `monitor` | off | compare every run with the previous one |
-| `name` | generated | robot name |
 
 **Smart Queries** ask an LLM a question about the page on every run:
 
 ```ts
-const robot = await maxun.scrape('https://news.ycombinator.com', {
+const robot = await maxun.scrape('HN', 'https://news.ycombinator.com', {
   smartQueries: 'Which story has the most points?',
 });
 const result = await robot.run();
@@ -112,11 +105,11 @@ await robot.run({ smartQueries: 'List the three newest stories' });
 
 ### Extract with selectors
 
-`maxun.extract(url)` starts a robot on that page. Chain the steps and finish with `.build()`:
+`maxun.extract(name, url)` starts a robot on that page. Chain the steps and finish with `.build()`:
 
 ```ts
 const robot = await maxun
-  .extract('https://shop.example.com')
+  .extract('Products', 'https://shop.example.com')
   .captureText({ 'Store name': 'h1', Tagline: '.hero p' })
   .captureList({ selector: 'article.product', maxItems: 50 })
   .build();
@@ -148,27 +141,27 @@ Other steps, in the order you want them to happen:
 .monitorChanges()                       // see Change monitoring
 ```
 
-`maxun.extract(url, { name, monitor: true })` names the robot and turns on [change monitoring](#change-monitoring).
+`maxun.extract(name, url, { monitor: true })` turns on [change monitoring](#change-monitoring).
 
 ### Extract with a prompt
 
 Describe the data; Maxun builds the robot:
 
 ```ts
-const robot = await maxun.extract('https://www.ycombinator.com/companies', {
+const robot = await maxun.extract('YC companies', 'https://www.ycombinator.com/companies', {
   prompt: 'Company names, descriptions and batch for the first 15 companies',
 });
 const result = await robot.run();
 result.listData;
 
 // Without a URL, Maxun searches for a suitable page first
-await maxun.extract({ prompt: 'Company names and batches from the YC directory' });
+await maxun.extract('YC batches', { prompt: 'Company names and batches from the YC directory' });
 ```
 
 ### Crawl
 
 ```ts
-const robot = await maxun.crawl('https://docs.example.com', {
+const robot = await maxun.crawl('Docs', 'https://docs.example.com', {
   limit: 100,
   includePaths: ['/guides/*'],
   formats: ['markdown'],
@@ -186,12 +179,11 @@ for (const page of result.crawlData) console.log(page.metadata.url);
 | `useSitemap` / `followLinks` / `respectRobots` | `true` | |
 | `formats` | `['markdown']` | what to capture from each page (same choices as scrape) |
 | `monitor` | off | compare every run with the previous one |
-| `name` | generated | robot name |
 
 ### Search
 
 ```ts
-const robot = await maxun.search('AI model releases', { mode: 'discover', timeRange: 'week' });
+const robot = await maxun.search('AI news', 'AI model releases', { mode: 'discover', timeRange: 'week' });
 const result = await robot.run();
 result.searchData;
 ```
@@ -202,7 +194,6 @@ result.searchData;
 | `limit` | `10` | number of results |
 | `timeRange` | any time | `'day'`, `'week'`, `'month'` or `'year'` |
 | `formats` | `['markdown']` | what to capture from each result in scrape mode |
-| `name` | generated | robot name |
 
 ### Documents
 
@@ -210,17 +201,15 @@ PDF, DOCX, XLSX, CSV, JPG and PNG.
 
 ```ts
 // Pull specific data out of a file
-const extractor = await maxun.documents.extract('invoice.pdf', 'Invoice number, date and total');
+const extractor = await maxun.documents.extract('Invoice', 'invoice.pdf', 'Invoice number, date and total');
 (await extractor.run()).documentData;
 
 // Convert a file to text formats
-const parser = await maxun.documents.parse('report.docx', { formats: ['markdown', 'links'] });
+const parser = await maxun.documents.parse('Report', 'report.docx', { formats: ['markdown', 'links'] });
 (await parser.run()).markdown;
 ```
 
 `parse` formats: `markdown`, `html`, `links`, `summary` (default: all four). You can pass a `Buffer` instead of a path; then give `fileName: 'report.docx'` so the type is known.
-
-Sending the same file with the same prompt or formats again returns the robot created the first time.
 
 ## Running robots and reading results
 
@@ -236,6 +225,21 @@ const result = await robot.run();
 
 If the run fails or is aborted, `run()` throws `RunFailedError`.
 
+A `RunResult` holds the run id, the status and only the outputs the run produced:
+
+```ts
+console.log(await robot.run());
+// {
+//   runId: 'b05cea93-31d1-4a17-9e6c-e278b4e4abf3',
+//   status: 'success',
+//   markdown: '# Example Domain\n\n…'
+// }
+```
+
+`hasChanges` and `changedFormats` (and `changedPages` for crawls) are included when the robot has [change monitoring](#change-monitoring) on. `JSON.stringify(result)` gives the same fields.
+
+Every output can also be read as a property, and is always safe to read: an output the run didn't produce is `undefined` or empty.
+
 | Property | Filled by |
 |---|---|
 | `runId`, `status` | every run |
@@ -250,7 +254,7 @@ If the run fails or is aborted, `run()` throws `RunFailedError`.
 | `hasChanges`, `changedFormats` | robots with change monitoring |
 | `changedPages` | crawl robots with change monitoring |
 
-The raw fields are still there too, so `result.data.listData` works.
+Code written for 0.0.x, like `result.data.listData`, still works.
 
 ## Managing robots
 
@@ -259,8 +263,8 @@ Robots print as just their id, name and type:
 ```ts
 console.log(await maxun.robots.list());
 // [
-//   { id: 'f4880b47-…', name: 'Extract: quotes.toscrape.com [a1b2c3]', type: 'extract' },
-//   { id: 'b827723a-…', name: 'Crawl: quotes.toscrape.com [9d8e7f]', type: 'crawl' }
+//   { id: 'f4880b47-…', name: 'Extract Test Quotes Robot', type: 'extract' },
+//   { id: 'b827723a-…', name: 'Test Crawl Quotes Robot', type: 'crawl' }
 // ]
 ```
 
@@ -351,10 +355,10 @@ await robot.removeWebhooks();                              // all
 Scrape, crawl and extract robots can compare every run with the previous successful run. Turn it on with `monitor: true`:
 
 ```ts
-await maxun.scrape('https://example.com/pricing', { formats: ['text'], monitor: true });
-await maxun.crawl('https://docs.example.com', { monitor: true });
-await maxun.extract(url, { monitor: true }).captureList({ selector: 'li' }).build();
-await maxun.extract(url, { prompt: 'Product names and prices', monitor: true });
+await maxun.scrape('Prices', 'https://example.com/pricing', { formats: ['text'], monitor: true });
+await maxun.crawl('Docs', 'https://docs.example.com', { monitor: true });
+await maxun.extract('Products', url, { monitor: true }).captureList({ selector: 'li' }).build();
+await maxun.extract('Products', url, { prompt: 'Product names and prices', monitor: true });
 
 // or on an existing robot
 await robot.setMonitoring(true);       // setMonitoring(false) turns it off
@@ -394,7 +398,7 @@ Crawl comparison is done by the SDK, because the Maxun server only compares scra
 ## LLM settings: Cloud vs self-hosted
 
 These features use an LLM:
-- prompt extraction, `maxun.extract(url, { prompt })`
+- prompt extraction, `maxun.extract(name, url, { prompt })`
 - `documents.extract`
 - the `summary` format
 - Smart Queries
@@ -404,7 +408,7 @@ These features use an LLM:
 **Self-hosted Maxun** has no built-in model, so these features need an LLM configuration:
 
 ```ts
-const robot = await maxun.extract('https://shop.example.com', {
+const robot = await maxun.extract('Products', 'https://shop.example.com', {
   prompt: 'Product names and prices',
   llmProvider: 'anthropic',       // 'anthropic', 'openai' or 'ollama'
   llmApiKey: 'sk-ant-...',        // required for anthropic and openai
@@ -438,7 +442,7 @@ import { MaxunError, ConflictError } from 'maxun-sdk';
 
 let robot;
 try {
-  robot = await maxun.scrape('https://example.com/pricing', { name: 'Pricing page' });
+  robot = await maxun.scrape('Pricing page', 'https://example.com/pricing');
 } catch (error) {
   if (error instanceof ConflictError) robot = await maxun.robots.find('Pricing page');
   else if (error instanceof MaxunError) console.log(error.statusCode, error.message, error.details);
@@ -459,7 +463,7 @@ Existing code keeps working. `new Extract(config)`, `new Scrape(config)`, `new C
   - Waits for the run to finish instead of giving up after 5 minutes.
   - Accepts `formats` and `smartQueries`.
   - `params`/`webhook` were never used by the server; passing them now warns.
-  - Returns a `RunResult` class with shortcuts; the old fields are unchanged. `RunResult` used to be an interface, so an object literal typed as `RunResult` no longer compiles; use the `RunResultData` type for raw objects. `Client.executeRobot()` returns a `RunResult` too. The shortcuts are getters, so `{ ...result }` and `JSON.stringify(result)` keep only the raw fields.
+  - Returns a `RunResult`. When printed or serialised it shows the run id, the status and only the outputs the run produced, plus `hasChanges`/`changedFormats` when monitoring is on. `result.data.*` and the other old fields still work as properties. `RunResult` used to be an interface, so an object literal typed as `RunResult` no longer compiles; use the `RunResultData` type for raw objects. `Client.executeRobot()` returns a `RunResult` too, and `Client.executeRaw()` the raw data.
   - Without a `timeout`, only making the connection is time-limited (by the client `timeout`, 30s by default); an open run is never cut off.
 - **`Extract.getRobots()`** returned nothing, because it read a field the server doesn't set. It now works, and every resource has `list()`, `get()` and `delete()`.
 - **Builder:**

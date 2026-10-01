@@ -7,7 +7,7 @@ import { Maxun, NotFoundError } from 'maxun-sdk';
 const maxun = new Maxun();
 
 async function main() {
-  const robot = await maxun.scrape('https://books.toscrape.com', { name: 'Books Scraper' });
+  const robot = await maxun.scrape('Books Scraper', 'https://books.toscrape.com');
 
   console.log(await maxun.robots.list()); // every robot: { id, name, type }
   console.log(await maxun.scrape.list()); // only scrape robots

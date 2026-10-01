@@ -6,24 +6,19 @@ import { ExtractBuilder } from './builders/extract-builder';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
 import { LlmOptions, RobotType } from './types';
-import { autoName, checkUrl, describeUrl, shorten } from './naming';
-import { buildLlmPayload } from './client/maxun-client';
+import { checkName, checkUrl, looksLikeUrl } from './naming';
 import { checkKeys, checkOptions, PROMPT_KEYS } from './scrape';
 
-/** Options for `maxun.extract(url, { prompt })`, or `maxun.extract({ prompt, url? })`. */
+/** Options for `maxun.extract(name, url, { prompt })` or `maxun.extract(name, { prompt })`. */
 export interface ExtractPromptCallOptions extends LlmOptions {
   /** What to extract, in plain English. */
   prompt: string;
-  /** Robot name. Defaults to one made from the URL (or prompt) and settings. */
-  name?: string;
   /** Compare every run with the previous successful run. */
   monitor?: boolean;
 }
 
-/** Options for `maxun.extract(url, options)` without a prompt (a selector robot). */
+/** Options for `maxun.extract(name, url, options)` without a prompt (a selector robot). */
 export interface ExtractBuilderCallOptions {
-  /** Robot name. Defaults to one made from the URL and the robot's steps. */
-  name?: string;
   /** Compare every run with the previous successful run. */
   monitor?: boolean;
 }
@@ -64,9 +59,7 @@ export class Extract extends Resource {
       throw new Error('The robot has no steps. Call navigate(url) and a capture method first.');
     }
     if (!builder.getMeta().name) {
-      const { name, robotType, ...meta } = builder.getMeta() as any;
-      const settings = { meta: { ...meta, type: robotType || meta.type || 'extract' }, workflow: builder.getWorkflowArray() };
-      builder.setName(autoName('Extract', describeUrl(builder.startUrl || ''), settings));
+      throw new Error('The robot needs a name: maxun.extract(name, url) or extract.create(name).');
     }
     const robot = await this.client.createRobot(builder.getWorkflow() as any);
     return new Robot(this.client, robot);
@@ -85,40 +78,42 @@ export class Extract extends Resource {
   }
 
   /**
-   * Start a selector robot on `url`. Same as `maxun.extract(url, options)`:
+   * Start a selector robot on `url`. Same as `maxun.extract(name, url, options)`:
    *
-   *     const robot = await maxun.extract('https://example.com').captureText({ Title: 'h1' }).build();
+   *     const robot = await maxun.extract('Titles', 'https://example.com').captureText({ Title: 'h1' }).build();
    */
-  fromUrl(url: string, options: ExtractBuilderCallOptions = {}): ExtractBuilder {
-    checkOptions(options, 'maxun.extract(url, options)');
-    const { name, monitor, ...rest } = options as ExtractBuilderCallOptions & Record<string, unknown>;
+  fromUrl(name: string, url: string, options: ExtractBuilderCallOptions = {}): ExtractBuilder {
+    const call = 'maxun.extract(name, url, options)';
+    const target = checkUrl(url, call, name);
+    const robotName = checkName(name, call);
+    checkOptions(options, call);
+    const { monitor, ...rest } = options as ExtractBuilderCallOptions & Record<string, unknown>;
     if (Object.keys(rest).length > 0) {
       throw new TypeError(
-        `maxun.extract(url, options) got ${Object.keys(rest).join(', ')}; llm* settings go with { prompt }, ` +
-          'a selector robot does not use an LLM.'
+        `${call} got ${Object.keys(rest).join(', ')}; llm* settings go with { prompt }, a selector robot does not use an LLM.`
       );
     }
-    const builder = new ExtractBuilder(name);
-    builder.setExtractor(this);
-    builder.navigate(checkUrl(url, 'maxun.extract(url)'));
+    const builder = this.create(robotName);
+    builder.navigate(target);
     if (monitor !== undefined) builder.monitorChanges(monitor);
     return builder;
   }
 
   /**
-   * Create a robot from a prompt, naming it automatically when no name is
-   * given. Used by `maxun.extract(url, { prompt })` and `maxun.extract({ prompt })`.
+   * Create a robot from a prompt. Used by `maxun.extract(name, url, { prompt })`
+   * and `maxun.extract(name, { prompt })`.
    */
-  async fromPromptCall(url: string | undefined, options: ExtractPromptCallOptions): Promise<Robot> {
-    checkKeys(options, PROMPT_KEYS, url === undefined ? 'maxun.extract({ prompt })' : 'maxun.extract(url, { prompt })');
-    const target = url === undefined ? undefined : checkUrl(url, 'maxun.extract(url, { prompt })');
+  async fromPromptCall(name: string, url: string | undefined, options: ExtractPromptCallOptions): Promise<Robot> {
+    const call = url === undefined ? 'maxun.extract(name, { prompt })' : 'maxun.extract(name, url, { prompt })';
+    if (url === undefined && looksLikeUrl(name)) {
+      throw new TypeError(`maxun.extract(name, url, { prompt }) takes the robot name first, e.g. maxun.extract('My robot', '${name}', { prompt }).`);
+    }
+    const robotName = checkName(name, call);
+    const target = url === undefined ? undefined : checkUrl(url, call);
+    checkKeys(options, PROMPT_KEYS, call);
     if (!options.prompt || !options.prompt.trim()) throw new Error('prompt is required');
-    const { name, prompt, monitor, ...llm } = options;
-    const settings = { type: 'extract', prompt: prompt.trim(), url: target, monitor, ...buildLlmPayload(llm) };
-    const subject = target ? describeUrl(target) : shorten(prompt);
-    return await this.createReusing(name, autoName('Extract', subject, settings), (robotName) =>
-      this.fromPrompt({ prompt: prompt.trim(), url: target, monitor, ...llm, name: robotName })
-    );
+    const { prompt, monitor, ...llm } = options;
+    return await this.fromPrompt({ prompt: prompt.trim(), url: target, monitor, ...llm, name: robotName });
   }
 
   /**

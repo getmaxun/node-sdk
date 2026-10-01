@@ -32,24 +32,24 @@ export class Robots extends Resource {
   }
 }
 
-/** `maxun.scrape(url, options)` creates a scrape robot; `maxun.scrape.list()` etc. also work. */
-export type ScrapeResource = Scrape & ((url: string, options?: ScrapeCallOptions) => Promise<Robot>);
+/** `maxun.scrape(name, url, options)` creates a scrape robot; `maxun.scrape.list()` etc. also work. */
+export type ScrapeResource = Scrape & ((name: string, url: string, options?: ScrapeCallOptions) => Promise<Robot>);
 
-/** `maxun.crawl(url, options)` creates a crawl robot. */
-export type CrawlResource = Crawl & ((url: string, options?: CrawlCallOptions) => Promise<Robot>);
+/** `maxun.crawl(name, url, options)` creates a crawl robot. */
+export type CrawlResource = Crawl & ((name: string, url: string, options?: CrawlCallOptions) => Promise<Robot>);
 
-/** `maxun.search(query, options)` creates a search robot. */
-export type SearchResource = Search & ((query: string, options?: SearchCallOptions) => Promise<Robot>);
+/** `maxun.search(name, query, options)` creates a search robot. */
+export type SearchResource = Search & ((name: string, query: string, options?: SearchCallOptions) => Promise<Robot>);
 
 /**
- * `maxun.extract(url, { prompt })` or `maxun.extract({ prompt })` builds a robot
- * from plain English; `maxun.extract(url)` returns a builder for a selector
- * robot that starts on `url`.
+ * `maxun.extract(name, url, { prompt })` or `maxun.extract(name, { prompt })`
+ * builds a robot from plain English; `maxun.extract(name, url)` returns a
+ * builder for a selector robot that starts on `url`.
  */
 export interface ExtractCall {
-  (url: string, options: ExtractPromptCallOptions): Promise<Robot>;
-  (options: ExtractPromptCallOptions & { url?: string }): Promise<Robot>;
-  (url: string, options?: ExtractBuilderCallOptions): ExtractBuilder;
+  (name: string, url: string, options: ExtractPromptCallOptions): Promise<Robot>;
+  (name: string, options: ExtractPromptCallOptions): Promise<Robot>;
+  (name: string, url: string, options?: ExtractBuilderCallOptions): ExtractBuilder;
 }
 export type ExtractResource = Extract & ExtractCall;
 
@@ -78,7 +78,7 @@ function callable<R extends object, F extends (...args: any[]) => any>(resource:
  * One connection to Maxun with every feature on it:
  *
  *     const maxun = new Maxun();          // reads MAXUN_API_KEY / MAXUN_BASE_URL
- *     const robot = await maxun.scrape('https://maxun.dev', { formats: ['markdown', 'html'] });
+ *     const robot = await maxun.scrape('Maxun home', 'https://maxun.dev', { formats: ['markdown', 'html'] });
  *     const result = await robot.run();
  *     console.log(result.markdown);
  *
@@ -101,26 +101,33 @@ export class Maxun {
     const search = new Search(this.client);
     const extract = new Extract(this.client);
 
-    this.scrape = callable(scrape, (url: string, options?: ScrapeCallOptions) => scrape.fromUrl(url, options));
-    this.crawl = callable(crawl, (url: string, options?: CrawlCallOptions) => crawl.fromUrl(url, options));
-    this.search = callable(search, (query: string, options?: SearchCallOptions) => search.fromQuery(query, options));
-    this.extract = callable(extract, ((urlOrOptions?: any, options?: any): any => {
+    const rejectExtra = (call: string, extra: unknown[]) => {
+      if (extra.length > 0) throw new TypeError(`${call} takes at most three arguments: the name, the target and an options object.`);
+    };
+    this.scrape = callable(scrape, async (name: string, url: string, options?: ScrapeCallOptions, ...extra: unknown[]) => {
+      rejectExtra('maxun.scrape(name, url, options)', extra);
+      return scrape.fromUrl(name, url, options);
+    });
+    this.crawl = callable(crawl, async (name: string, url: string, options?: CrawlCallOptions, ...extra: unknown[]) => {
+      rejectExtra('maxun.crawl(name, url, options)', extra);
+      return crawl.fromUrl(name, url, options);
+    });
+    this.search = callable(search, async (name: string, query: string, options?: SearchCallOptions, ...extra: unknown[]) => {
+      rejectExtra('maxun.search(name, query, options)', extra);
+      return search.fromQuery(name, query, options);
+    });
+    this.extract = callable(extract, ((name: string, urlOrOptions?: any, options?: any, ...extra: unknown[]): any => {
+      rejectExtra('maxun.extract(name, url, options)', extra);
       if (urlOrOptions && typeof urlOrOptions === 'object') {
         if (urlOrOptions.prompt === undefined) {
-          throw new TypeError("maxun.extract(options) needs { prompt }; for a selector robot pass the URL: maxun.extract(url).");
+          throw new TypeError('maxun.extract(name, options) needs { prompt }; for a selector robot pass the URL: maxun.extract(name, url).');
         }
-        const { url, ...rest } = urlOrOptions;
-        return extract.fromPromptCall(url, rest);
-      }
-      if (urlOrOptions === undefined) {
-        throw new TypeError(
-          "maxun.extract() needs a URL to start on, e.g. maxun.extract('https://example.com'), or { prompt } to describe the data."
-        );
+        return extract.fromPromptCall(name, undefined, urlOrOptions);
       }
       if (options && typeof options === 'object' && options.prompt !== undefined) {
-        return extract.fromPromptCall(urlOrOptions, options);
+        return extract.fromPromptCall(name, urlOrOptions, options);
       }
-      return extract.fromUrl(urlOrOptions, options);
+      return extract.fromUrl(name, urlOrOptions, options);
     }) as ExtractCall);
     this.documents = new Documents(this.client);
     this.robots = new Robots(this.client);

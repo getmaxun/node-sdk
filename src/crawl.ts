@@ -6,8 +6,7 @@ import { CrawlConfig, DEFAULT_CRAWL_CONFIG, Format, LlmOptions, RobotType } from
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
 import { checkFormats, checkKeys, checkOptions, CRAWL_KEYS } from './scrape';
-import { autoName, checkUrl, describeUrl } from './naming';
-import { buildLlmPayload } from './client/maxun-client';
+import { checkName, checkUrl } from './naming';
 
 export interface CrawlCreateOptions extends LlmOptions {
   /** What to capture from each page. Defaults to ['markdown']. */
@@ -17,13 +16,10 @@ export interface CrawlCreateOptions extends LlmOptions {
 }
 
 /**
- * Options for `maxun.crawl(url, options)`: which pages to visit, what to
- * capture from each, and the robot's name.
+ * Options for `maxun.crawl(name, url, options)`: which pages to visit and what
+ * to capture from each.
  */
-export interface CrawlCallOptions extends CrawlConfig, CrawlCreateOptions {
-  /** Robot name. Defaults to one made from the URL and settings. */
-  name?: string;
-}
+export interface CrawlCallOptions extends CrawlConfig, CrawlCreateOptions {}
 
 export class Crawl extends Resource {
   protected readonly robotTypes: RobotType[] = ['crawl'];
@@ -57,33 +53,32 @@ export class Crawl extends Resource {
   }
 
   /**
-   * Create a crawl robot from a URL. Same as `maxun.crawl(url, options)`:
+   * Create a crawl robot. Same as `maxun.crawl(name, url, options)`:
    *
-   *     const robot = await maxun.crawl('https://docs.example.com', { limit: 20, formats: ['markdown'] });
+   *     const robot = await maxun.crawl('Docs', 'https://docs.example.com', { limit: 20, formats: ['markdown'] });
    *
    * Defaults: `mode: 'domain'`, `limit: 50`, `maxDepth: 3`, `useSitemap`,
    * `followLinks` and `respectRobots` all true.
    */
-  async fromUrl(url: string, options: CrawlCallOptions = {}): Promise<Robot> {
-    checkOptions(options, 'maxun.crawl(url, options)');
-    checkKeys(options, CRAWL_KEYS, 'maxun.crawl(url, options)');
-    const target = checkUrl(url, 'maxun.crawl(url, options)');
-    const { name, formats, monitor, llmProvider, llmModel, llmApiKey, llmBaseUrl, ...configInput } = options;
-    const llm = { llmProvider, llmModel, llmApiKey, llmBaseUrl };
+  async fromUrl(name: string, url: string, options: CrawlCallOptions = {}): Promise<Robot> {
+    const call = 'maxun.crawl(name, url, options)';
+    const target = checkUrl(url, call, name);
+    const robotName = checkName(name, call);
+    checkOptions(options, call);
+    checkKeys(options, CRAWL_KEYS, call);
+    const { formats, monitor, llmProvider, llmModel, llmApiKey, llmBaseUrl, ...configInput } = options;
+    checkFormats(formats);
     const crawlConfig: CrawlConfig = { ...DEFAULT_CRAWL_CONFIG };
     for (const [key, value] of Object.entries(configInput)) {
       if (value !== undefined) (crawlConfig as any)[key] = value;
     }
-    const settings = {
-      type: 'crawl',
-      url: target,
-      crawlConfig,
-      formats: checkFormats(formats) || ['markdown'],
+    return await this.create(robotName, target, crawlConfig, {
+      formats,
       monitor,
-      ...buildLlmPayload(llm),
-    };
-    return await this.createReusing(name, autoName('Crawl', describeUrl(target), settings), (robotName) =>
-      this.create(robotName, target, crawlConfig, { formats, monitor, ...llm })
-    );
+      llmProvider,
+      llmModel,
+      llmApiKey,
+      llmBaseUrl,
+    });
   }
 }

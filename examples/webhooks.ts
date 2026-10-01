@@ -10,7 +10,7 @@ import { Maxun } from 'maxun-sdk';
 const maxun = new Maxun();
 
 async function main() {
-  const robot = await maxun.scrape('https://example.com', { name: 'Example With Webhook' });
+  const robot = await maxun.scrape('Example With Webhook', 'https://example.com');
 
   // Both events by default
   const hook = await robot.addWebhook('https://your-server.example/maxun-hook');

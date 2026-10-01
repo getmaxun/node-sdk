@@ -15,7 +15,7 @@ const maxun = new Maxun();
 
 async function main() {
   const robot = await maxun
-    .extract('https://openlibrary.org/trending/daily', { name: 'Open Library Trending' })
+    .extract('Open Library Trending', 'https://openlibrary.org/trending/daily')
     .captureList({
       selector: 'li.searchResultItem',
       pagination: { type: 'clickNext', selector: 'a[data-ol-link-track="Pager|Next"]' },

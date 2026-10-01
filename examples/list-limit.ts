@@ -9,15 +9,15 @@ const maxun = new Maxun();
 
 async function main() {
   const books = await maxun
-    .extract('https://books.toscrape.com/')
+    .extract('Books List Limit Demo', 'https://books.toscrape.com/')
     .captureList({ selector: 'article.product_pod', maxItems: 10 })
     .build();
   await books.setListLimit(25);
 
-  const crawler = await maxun.crawl('https://books.toscrape.com/', { limit: 5 });
+  const crawler = await maxun.crawl('Books Crawl Limit Demo', 'https://books.toscrape.com/', { limit: 5 });
   await crawler.setListLimit(20);
 
-  const search = await maxun.search('web scraping', { mode: 'discover' });
+  const search = await maxun.search('Search Limit Demo', 'web scraping', { mode: 'discover' });
   await search.setListLimit(30);
 
   console.log('Limits updated for', [books.name, crawler.name, search.name].join(', '));

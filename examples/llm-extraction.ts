@@ -21,7 +21,7 @@ const llm: LlmOptions = Object.fromEntries(
 
 async function main() {
   // With a URL
-  const robot = await maxun.extract('https://www.ycombinator.com/companies', {
+  const robot = await maxun.extract('YC Companies', 'https://www.ycombinator.com/companies', {
     prompt: 'Extract the first 15 company names, descriptions and batch',
     ...llm,
   });
@@ -29,7 +29,7 @@ async function main() {
   console.log(JSON.stringify(result.listData.slice(0, 3), null, 2));
 
   // Without a URL, Maxun searches for a suitable page first
-  const auto = await maxun.extract({
+  const auto = await maxun.extract('YC Companies (auto-search)', {
     prompt: 'Company names and descriptions from the Y Combinator companies directory',
     ...llm,
   });
