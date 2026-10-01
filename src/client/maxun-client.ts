@@ -14,7 +14,7 @@ import FormData from 'form-data';
 import {
   Config,
   RobotData,
-  Run,
+  RunData,
   ApiResponse,
   RunResultData,
   ScheduleConfig,
@@ -179,14 +179,16 @@ function errorFromResponse(status: number, body: any, url: string): MaxunError {
 }
 
 export class Client {
-  private axios: AxiosInstance;
-  private apiKey: string;
+  private axios!: AxiosInstance;
+  private apiKey!: string;
   private connectTimeout: number;
   readonly baseUrl: string;
 
   constructor(config?: Config) {
     const resolved = resolveConfig(config);
-    this.apiKey = resolved.apiKey;
+    // Kept off the enumerable properties so console.log(client) never shows the key.
+    Object.defineProperty(this, 'apiKey', { value: resolved.apiKey, enumerable: false, writable: true });
+    Object.defineProperty(this, 'axios', { value: undefined, enumerable: false, writable: true });
     this.baseUrl = resolved.baseUrl;
     this.connectTimeout = resolved.timeout;
 
@@ -399,16 +401,16 @@ export class Client {
   /**
    * Get all runs for a robot
    */
-  async getRuns(robotId: string): Promise<Run[]> {
-    const body = await this.request<Run[]>({ method: 'GET', url: `/robots/${robotId}/runs` });
+  async getRuns(robotId: string): Promise<RunData[]> {
+    const body = await this.request<RunData[]>({ method: 'GET', url: `/robots/${robotId}/runs` });
     return body.data || [];
   }
 
   /**
    * Get a specific run by ID
    */
-  async getRun(robotId: string, runId: string): Promise<Run> {
-    const body = await this.request<Run>({ method: 'GET', url: `/robots/${robotId}/runs/${runId}` });
+  async getRun(robotId: string, runId: string): Promise<RunData> {
+    const body = await this.request<RunData>({ method: 'GET', url: `/robots/${robotId}/runs/${runId}` });
     if (!body.data) {
       throw new NotFoundError(`Run ${runId} not found`, 404);
     }

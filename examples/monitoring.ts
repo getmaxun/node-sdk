@@ -8,7 +8,7 @@ const maxun = new Maxun();
 
 async function main() {
   // A single page
-  const page = await maxun.scrape('World Population Monitor', 'https://www.worldometers.info/world-population/', {
+  const page = await maxun.scrape('https://www.worldometers.info/world-population/', {
     formats: ['text'],
     monitor: true, // or later: await page.setMonitoring(true)
   });
@@ -25,15 +25,14 @@ async function main() {
   }
 
   // A whole section of a site: also reports which pages appeared, vanished or changed
-  const site = await maxun.crawl('Blog Monitor', 'https://www.ycombinator.com/blog', { mode: 'path', limit: 10 }, { monitor: true });
+  const site = await maxun.crawl('https://www.ycombinator.com/blog', { mode: 'path', limit: 10, monitor: true });
   await site.run();
   result = await site.run();
   console.log('Pages:', result.changedPages);
 
   // Captured data from selectors
   const listing = await maxun
-    .extract('HN Front Page Monitor', { monitor: true })
-    .navigate('https://news.ycombinator.com')
+    .extract('https://news.ycombinator.com', { monitor: true })
     .captureList({ selector: 'tr.athing', maxItems: 30 })
     .build();
   await listing.run();

@@ -10,7 +10,7 @@ import type { Robot } from '../robot/robot';
 export class ExtractBuilder extends WorkflowBuilder implements PromiseLike<Robot> {
   private extractor!: Extract; // Will be set by Extract
 
-  constructor(name: string) {
+  constructor(name?: string) {
     super(name, 'extract');
   }
 

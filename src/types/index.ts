@@ -111,10 +111,13 @@ export interface ListLimitUpdate {
   limit: number;
 }
 
-export interface Run {
+/** A run record as the server stores it. `robot.getRuns()` returns `Run` objects built from these. */
+export interface RunData {
   id: string;
   status: RunStatus;
   robotMetaId: string;
+  robotId?: string;
+  name?: string;
   runId: string;
   startedAt: string;
   finishedAt: string | null;

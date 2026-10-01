@@ -7,17 +7,13 @@ import { Maxun } from 'maxun-sdk';
 const maxun = new Maxun();
 
 async function main() {
-  const robot = await maxun.crawl(
-    'YC Blog Crawler',
-    'https://www.ycombinator.com/blog',
-    {
-      mode: 'path', // stay under /blog ('domain' | 'subdomain' | 'path')
-      limit: 10, // at most 10 pages
-      maxDepth: 2,
-      excludePaths: ['/tag/*'],
-    },
-    { formats: ['markdown'] }
-  );
+  const robot = await maxun.crawl('https://www.ycombinator.com/blog', {
+    mode: 'path', // stay under /blog ('domain' | 'subdomain' | 'path')
+    limit: 10, // at most 10 pages
+    maxDepth: 2,
+    excludePaths: ['/tag/*'],
+    formats: ['markdown'],
+  });
 
   const result = await robot.run();
   for (const page of result.crawlData) {

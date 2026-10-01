@@ -8,8 +8,7 @@ const maxun = new Maxun();
 
 async function main() {
   const robot = await maxun
-    .extract('Hacker News Top Story')
-    .navigate('https://news.ycombinator.com')
+    .extract('https://news.ycombinator.com', { name: 'Hacker News Top Story' })
     .captureText({
       Title: 'tr.athing:first-child .titleline > a',
       Points: 'tr.athing:first-child + tr .score',

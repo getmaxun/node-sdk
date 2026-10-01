@@ -9,8 +9,7 @@ const maxun = new Maxun();
 
 async function main() {
   const robot = await maxun
-    .extract('Premier League Table')
-    .navigate('https://www.bbc.com/sport/football/tables')
+    .extract('https://www.bbc.com/sport/football/tables', { name: 'Premier League Table' })
     .captureText({ Title: 'h1' }, 'Heading')
     .captureList({ selector: 'table tbody tr', maxItems: 20 }, 'Standings')
     .build();

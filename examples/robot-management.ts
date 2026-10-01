@@ -7,21 +7,21 @@ import { Maxun, NotFoundError } from 'maxun-sdk';
 const maxun = new Maxun();
 
 async function main() {
-  const robot = await maxun.scrape('Books Scraper', 'https://books.toscrape.com');
+  const robot = await maxun.scrape('https://books.toscrape.com', { name: 'Books Scraper' });
 
-  console.log((await maxun.robots.list()).map((r) => r.name)); // every robot
-  console.log((await maxun.scrape.list()).map((r) => r.name)); // only scrape robots
+  console.log(await maxun.robots.list()); // every robot: { id, name, type }
+  console.log(await maxun.scrape.list()); // only scrape robots
   let same = await maxun.robots.find('Books Scraper'); // by name
   same = await maxun.robots.get(robot.id); // by id
-  console.log(String(same), same.url, same.formats);
+  console.log(same, same.url, same.formats);
 
   await robot.rename('Books Scraper (renamed)');
 
   const result = await robot.run();
-  const runs = await robot.getRuns(); // newest first
-  const latest = await robot.getLatestRun();
+  console.log(await robot.getRuns()); // newest first, summaries only
   const run = await robot.getRun(result.runId);
-  console.log(runs.length, latest?.runId, run.status);
+  console.log(run.status, run.startedAt, run.finishedAt);
+  console.log(run.result.listData.length); // the run's output
 
   const copy = await robot.duplicate('https://books.toscrape.com/catalogue/page-2.html');
   await copy.delete();

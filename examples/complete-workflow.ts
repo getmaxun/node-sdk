@@ -9,8 +9,7 @@ const maxun = new Maxun();
 
 async function main() {
   const robot = await maxun
-    .extract('Trending Books Daily')
-    .navigate('https://openlibrary.org/trending/daily')
+    .extract('https://openlibrary.org/trending/daily', { name: 'Trending Books Daily' })
     .captureList({ selector: 'li.searchResultItem', maxItems: 25 })
     .monitorChanges()
     .build();

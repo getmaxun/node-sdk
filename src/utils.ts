@@ -71,9 +71,37 @@ export function loadDocument(file: string | Buffer | Uint8Array, fileName?: stri
   return { fileName: name, data, contentType: documentContentType(name) };
 }
 
-/** Parse the run timestamps the server returns (ISO or toLocaleString output). */
+const LOCALE_TIME = /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s*(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/i;
+
+/**
+ * Parse a run timestamp to epoch milliseconds.
+ *
+ * The server writes `new Date().toLocaleString()` ("9/30/2026, 10:00:00 AM"),
+ * which has no timezone; it is read as UTC, the default for Maxun deployments.
+ * ISO strings without an offset are also read as UTC.
+ */
 export function parseTime(value: unknown): number | null {
-  if (typeof value !== 'string') return null;
-  const time = new Date(value).getTime();
-  return Number.isNaN(time) ? null : time;
+  if (typeof value !== 'string' || !value.trim()) return null;
+  // Newer Node versions put a narrow no-break space before AM/PM.
+  const text = value.replace(/[\u202f\u00a0]/g, ' ').trim();
+  const local = LOCALE_TIME.exec(text);
+  if (local) {
+    const [, month, day, year, hour, minute, second, half] = local;
+    let h = Number(hour) % 12;
+    if (half.toUpperCase() === 'PM') h += 12;
+    return Date.UTC(Number(year), Number(month) - 1, Number(day), h, Number(minute), Number(second));
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+    const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(text);
+    const time = new Date(hasZone || !text.includes('T') ? text : `${text}Z`).getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+  return null;
+}
+
+/** A run timestamp as ISO 8601 UTC ("2026-10-01T00:46:25Z"); unrecognised values are returned unchanged. */
+export function toIso(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const time = parseTime(value);
+  return time === null ? value : new Date(time).toISOString().replace(/\.\d{3}Z$/, 'Z');
 }

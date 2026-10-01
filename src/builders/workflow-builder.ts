@@ -20,10 +20,19 @@ export abstract class WorkflowBuilder {
   protected meta: Partial<RobotMeta> = {};
   protected currentStep: WhereWhatPair | null = null;
   private isFirstNavigation: boolean = true;
+  /** The first URL passed to `navigate()`. */
+  startUrl?: string;
 
-  constructor(protected name: string, protected robotType: RobotType) {
-    this.meta.name = name;
+  constructor(protected name: string | undefined, protected robotType: RobotType) {
+    if (name) this.meta.name = name;
     this.meta.robotType = robotType;
+  }
+
+  /** Set the robot's name. */
+  setName(name: string): this {
+    this.name = name;
+    this.meta.name = name;
+    return this;
   }
 
   /**
@@ -38,6 +47,7 @@ export abstract class WorkflowBuilder {
 
     // Only add about:blank on FIRST navigation
     if (this.isFirstNavigation) {
+      this.startUrl = url;
       // Create the about:blank step
       const aboutBlankStep: WhereWhatPair = {
         where: { url: 'about:blank' },

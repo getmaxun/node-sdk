@@ -8,8 +8,7 @@ const maxun = new Maxun();
 
 async function main() {
   const robot = await maxun
-    .extract('Form Fill Demo')
-    .navigate('https://practice.expandtesting.com/inputs')
+    .extract('https://practice.expandtesting.com/inputs', { name: 'Form Fill Demo' })
     .type('#input-text', 'John Doe')
     .type('#input-number', '42')
     .type('#input-password', 'SecurePassword123', 'password')

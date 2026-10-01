@@ -5,14 +5,14 @@
 import { inspect } from 'util';
 import { Client } from './client/maxun-client';
 import { ExtractBuilder } from './builders/extract-builder';
-import { Crawl, CrawlCreateOptions } from './crawl';
+import { Crawl, CrawlCallOptions } from './crawl';
 import { Documents } from './documents';
-import { Extract, PromptExtractOptions } from './extract';
+import { Extract, ExtractBuilderCallOptions, ExtractPromptCallOptions } from './extract';
 import { Resource } from './resource';
 import { Robot } from './robot/robot';
-import { Scrape, ScrapeOptions } from './scrape';
-import { Search, SearchCreateOptions } from './search';
-import { Config, CrawlConfig, NotFoundError, RobotType, SearchConfig } from './types';
+import { Scrape, ScrapeCallOptions } from './scrape';
+import { Search, SearchCallOptions } from './search';
+import { Config, NotFoundError, RobotType } from './types';
 
 /** Every robot on your account, whatever its type. */
 export class Robots extends Resource {
@@ -32,24 +32,24 @@ export class Robots extends Resource {
   }
 }
 
-/** `maxun.scrape(name, url, options)` creates a scrape robot; `maxun.scrape.list()` etc. also work. */
-export type ScrapeResource = Scrape & ((name: string, url: string, options?: ScrapeOptions) => Promise<Robot>);
+/** `maxun.scrape(url, options)` creates a scrape robot; `maxun.scrape.list()` etc. also work. */
+export type ScrapeResource = Scrape & ((url: string, options?: ScrapeCallOptions) => Promise<Robot>);
 
-/** `maxun.crawl(name, url, crawlConfig?, options?)` creates a crawl robot. */
-export type CrawlResource = Crawl &
-  ((name: string, url: string, crawlConfig?: CrawlConfig, options?: CrawlCreateOptions) => Promise<Robot>);
+/** `maxun.crawl(url, options)` creates a crawl robot. */
+export type CrawlResource = Crawl & ((url: string, options?: CrawlCallOptions) => Promise<Robot>);
 
-/** `maxun.search(name, queryOrConfig, options?)` creates a search robot. */
-export type SearchResource = Search &
-  ((name: string, searchConfig: SearchConfig | string, options?: SearchCreateOptions) => Promise<Robot>);
+/** `maxun.search(query, options)` creates a search robot. */
+export type SearchResource = Search & ((query: string, options?: SearchCallOptions) => Promise<Robot>);
 
 /**
- * `maxun.extract(name)` returns a builder for a selector robot;
- * `maxun.extract(name, { prompt, url })` builds a robot from plain English.
+ * `maxun.extract(url, { prompt })` or `maxun.extract({ prompt })` builds a robot
+ * from plain English; `maxun.extract(url)` returns a builder for a selector
+ * robot that starts on `url`.
  */
 export interface ExtractCall {
-  (name: string, options: Omit<PromptExtractOptions, 'name'>): Promise<Robot>;
-  (name: string, options?: { monitor?: boolean }): ExtractBuilder;
+  (url: string, options: ExtractPromptCallOptions): Promise<Robot>;
+  (options: ExtractPromptCallOptions): Promise<Robot>;
+  (url: string, options?: ExtractBuilderCallOptions): ExtractBuilder;
 }
 export type ExtractResource = Extract & ExtractCall;
 
@@ -78,7 +78,7 @@ function callable<R extends object, F extends (...args: any[]) => any>(resource:
  * One connection to Maxun with every feature on it:
  *
  *     const maxun = new Maxun();          // reads MAXUN_API_KEY / MAXUN_BASE_URL
- *     const robot = await maxun.scrape('Home page', 'https://example.com');
+ *     const robot = await maxun.scrape('https://maxun.dev', { formats: ['markdown', 'html'] });
  *     const result = await robot.run();
  *     console.log(result.markdown);
  *
@@ -101,28 +101,25 @@ export class Maxun {
     const search = new Search(this.client);
     const extract = new Extract(this.client);
 
-    this.scrape = callable(scrape, (name: string, url: string, options?: ScrapeOptions) =>
-      scrape.create(name, url, options)
-    );
-    this.crawl = callable(crawl, (name: string, url: string, crawlConfig?: CrawlConfig, options?: CrawlCreateOptions) =>
-      crawl.create(name, url, crawlConfig, options)
-    );
-    this.search = callable(search, (name: string, config: SearchConfig | string, options?: SearchCreateOptions) =>
-      search.create(name, config, options)
-    );
-    this.extract = callable(extract, ((name: string, options?: any) => {
-      if (options && options.prompt !== undefined) {
-        return extract.fromPrompt({ ...options, name });
+    this.scrape = callable(scrape, (url: string, options?: ScrapeCallOptions) => scrape.fromUrl(url, options));
+    this.crawl = callable(crawl, (url: string, options?: CrawlCallOptions) => crawl.fromUrl(url, options));
+    this.search = callable(search, (query: string, options?: SearchCallOptions) => search.fromQuery(query, options));
+    this.extract = callable(extract, ((urlOrOptions?: any, options?: any): any => {
+      if (urlOrOptions && typeof urlOrOptions === 'object') {
+        if (urlOrOptions.prompt === undefined) {
+          throw new TypeError("maxun.extract(options) needs { prompt }; for a selector robot pass the URL: maxun.extract(url).");
+        }
+        return extract.fromPromptCall(undefined, urlOrOptions);
       }
-      const { monitor, ...rest } = options || {};
-      if (Object.keys(rest).length > 0) {
+      if (urlOrOptions === undefined) {
         throw new TypeError(
-          'url and llm* options go with { prompt }; for a selector robot use .navigate(url) on the builder.'
+          "maxun.extract() needs a URL to start on, e.g. maxun.extract('https://example.com'), or { prompt } to describe the data."
         );
       }
-      const builder = extract.create(name);
-      if (monitor !== undefined) builder.monitorChanges(monitor);
-      return builder;
+      if (options && typeof options === 'object' && options.prompt !== undefined) {
+        return extract.fromPromptCall(urlOrOptions, options);
+      }
+      return extract.fromUrl(urlOrOptions, options);
     }) as ExtractCall);
     this.documents = new Documents(this.client);
     this.robots = new Robots(this.client);

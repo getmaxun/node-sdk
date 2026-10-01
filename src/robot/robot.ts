@@ -11,24 +11,37 @@ import {
   StoredWebhook,
   ExecutionOptions,
   Format,
-  Run,
+  RunData,
   MaxunError,
 } from '../types';
+import { inspect } from 'util';
 import { Client } from '../client/maxun-client';
 import { parseTime, warn } from '../utils';
 import { RunResult } from './run-result';
+import { Run } from './run';
 import { compareCrawl, crawlDiff, crawlPages, previousSuccessfulRun } from './monitoring';
 
 /** Robot types that support change monitoring. */
 export const MONITORABLE_TYPES: RobotType[] = ['scrape', 'crawl', 'extract'];
 
 export class Robot {
-  protected client: Client;
-  protected robotData: RobotData;
+  protected client!: Client;
+  protected robotData!: RobotData;
 
   constructor(client: Client, robotData: RobotData) {
-    this.client = client;
-    this.robotData = robotData;
+    // Not enumerable, so console.log(robot) shows only the summary below and
+    // never the client (which holds the API key) or the raw record.
+    Object.defineProperty(this, 'client', { value: client, enumerable: false, writable: true });
+    Object.defineProperty(this, 'robotData', { value: robotData, enumerable: false, writable: true });
+  }
+
+  /** `{ id, name, type }` - what a robot shows when printed or serialised. */
+  toJSON(): { id: string; name: string; type: RobotType | undefined } {
+    return { id: this.id, name: this.name, type: this.type };
+  }
+
+  [inspect.custom](_depth: number, options: any, inspectFn: typeof inspect = inspect): string {
+    return inspectFn(this.toJSON(), options);
   }
 
   // ---------- properties ----------
@@ -92,7 +105,7 @@ export class Robot {
     const wantsLinks = formats.includes('links');
     const isDocument = this.type === 'doc-extract';
     if (!(wantsLinks || isDocument) || !result.runId) return;
-    let run: Run;
+    let run: RunData;
     try {
       run = await this.client.getRun(this.id, result.runId);
     } catch (error) {
@@ -112,9 +125,9 @@ export class Robot {
   /** The server does not compare crawl runs, so the SDK does it. */
   private async compareCrawlRun(result: RunResult): Promise<void> {
     if (!result.runId) return;
-    let runs: Run[];
+    let runs: RunData[];
     try {
-      runs = await this.getRuns();
+      runs = await this.rawRuns();
     } catch (error) {
       warn(`The run succeeded but could not be compared with the previous run: ${(error as Error).message}`);
       return;
@@ -138,9 +151,14 @@ export class Robot {
   }
 
   /**
-   * Get all runs for this robot, newest first
+   * All runs of this robot, newest first. Each run prints as a short summary;
+   * its output is in `run.result`.
    */
   async getRuns(): Promise<Run[]> {
+    return (await this.rawRuns()).map((raw) => new Run(raw));
+  }
+
+  private async rawRuns(): Promise<RunData[]> {
     const runs = await this.client.getRuns(this.id);
     const times = runs.map((r) => parseTime(r.startedAt));
     if (runs.length && times.every((t) => t !== null)) {
@@ -156,7 +174,7 @@ export class Robot {
    * Get a specific run
    */
   async getRun(runId: string): Promise<Run> {
-    return await this.client.getRun(this.id, runId);
+    return new Run(await this.client.getRun(this.id, runId));
   }
 
   /**
@@ -197,7 +215,7 @@ export class Robot {
    */
   async getRunDiff(runId: string, format?: string): Promise<RunDiffResult> {
     if (this.type === 'crawl') {
-      const runs = await this.getRuns();
+      const runs = await this.rawRuns();
       const current = runs.find((r) => r.runId === runId) || (await this.client.getRun(this.id, runId));
       const output: Record<string, any> = current.serializableOutput || {};
       if (!('_comparison' in output)) {
@@ -338,6 +356,6 @@ export class Robot {
   }
 
   toString(): string {
-    return `Robot(${this.type}: ${this.name} [${this.id}])`;
+    return `Robot(id=${this.id}, name=${this.name}, type=${this.type})`;
   }
 }

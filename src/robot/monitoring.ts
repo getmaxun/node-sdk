@@ -9,7 +9,7 @@
  */
 
 import { diffLines } from 'diff';
-import { ChangedPages, Run, RunDiffResult } from '../types';
+import { ChangedPages, RunData as Run, RunDiffResult } from '../types';
 
 const COMPARABLE_FORMATS = ['text', 'markdown', 'html'] as const;
 

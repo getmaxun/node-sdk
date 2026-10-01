@@ -2,15 +2,29 @@
  * Search - search the web (DuckDuckGo) and optionally scrape every result.
  */
 
-import { Format, LlmOptions, RobotType, SearchConfig } from './types';
+import { Format, LlmOptions, RobotType, SearchConfig, SearchMode, SearchTimeRange } from './types';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
-import { checkFormats } from './scrape';
+import { checkFormats, checkOptions } from './scrape';
+import { autoName, shorten } from './naming';
+import { buildLlmPayload } from './client/maxun-client';
 import { warn } from './utils';
 
 export interface SearchCreateOptions extends LlmOptions {
   /** What to capture from each result in scrape mode. Defaults to ['markdown']. */
   formats?: Format[];
+}
+
+/** Options for `maxun.search(query, options)`. */
+export interface SearchCallOptions extends SearchCreateOptions {
+  /** `'discover'` returns titles, URLs and snippets; `'scrape'` (default) also scrapes every result. */
+  mode?: SearchMode;
+  /** Number of results (default 10). */
+  limit?: number;
+  /** Only results from the past day, week, month or year. */
+  timeRange?: SearchTimeRange;
+  /** Robot name. Defaults to one made from the query and settings. */
+  name?: string;
 }
 
 export class Search extends Resource {
@@ -54,5 +68,21 @@ export class Search extends Resource {
     });
 
     return new Robot(this.client, robot);
+  }
+
+  /**
+   * Create a search robot from a query. Same as `maxun.search(query, options)`:
+   *
+   *     const robot = await maxun.search('AI model releases', { mode: 'discover', timeRange: 'week' });
+   */
+  async fromQuery(query: string, options: SearchCallOptions = {}): Promise<Robot> {
+    checkOptions(options, 'maxun.search(query, options)');
+    if (typeof query !== 'string' || !query.trim()) {
+      throw new Error("maxun.search(query, options) needs a search query, e.g. maxun.search('AI news').");
+    }
+    const { name, mode = 'scrape', limit = 10, timeRange, formats, ...llm } = options;
+    const searchConfig: SearchConfig = { query: query.trim(), mode, limit, ...(timeRange ? { timeRange } : {}) };
+    const settings = { type: 'search', searchConfig, formats: checkFormats(formats), ...buildLlmPayload(llm) };
+    return await this.create(name || autoName('Search', shorten(query), settings), searchConfig, { formats, ...llm });
   }
 }

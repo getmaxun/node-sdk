@@ -11,7 +11,7 @@ import { Maxun } from 'maxun-sdk';
 const maxun = new Maxun();
 
 async function main() {
-  const robot = await maxun.scrape('Example Daily', 'https://example.com');
+  const robot = await maxun.scrape('https://example.com', { name: 'Example Daily' });
 
   // Every 6 hours
   const schedule = await robot.schedule({ runEvery: 6, runEveryUnit: 'HOURS', timezone: 'Asia/Kolkata' });

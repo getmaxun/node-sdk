@@ -72,76 +72,91 @@ describe('configuration', () => {
 // ---------- creating robots ----------
 
 describe('creating robots', () => {
-  test('scrape: callable and .create() send the same request', async () => {
+  const NAME = (kind: string, subject: string) => new RegExp(`^${kind}: ${subject.replace(/\./g, '\\.')} \\[[0-9a-f]{6}\\]$`);
+
+  test('scrape takes the URL first and settings as options', async () => {
     server.on('POST /robots', { status: 201, body: { data: robotRecord() } });
-    const robot = await maxun.scrape('S', 'https://e.com', {
-      formats: ['markdown', 'text'],
-      smartQueries: ' price? ',
-      monitor: true,
-    });
-    assert.deepEqual(server.last('POST /robots').json, {
-      meta: {
-        name: 'S', type: 'scrape', url: 'https://e.com', formats: ['markdown', 'text'],
-        promptInstructions: 'price?', compareRuns: true,
-      },
-      workflow: [],
-    });
+    const robot = await maxun.scrape('https://maxun.dev/pricing/', { formats: ['markdown', 'html'], monitor: true });
+    const meta = server.last('POST /robots').json.meta;
+    assert.equal(meta.url, 'https://maxun.dev/pricing/');
+    assert.deepEqual(meta.formats, ['markdown', 'html']);
+    assert.equal(meta.compareRuns, true);
+    assert.match(meta.name, NAME('Scrape', 'maxun.dev/pricing'));
     assert.equal(robot.id, 'r1');
-    assert.equal(robot.type, 'scrape');
     assert.ok(maxun.scrape instanceof Scrape);
 
+    // Same call, same name; different settings, different name.
+    const first = meta.name;
+    await maxun.scrape('https://maxun.dev/pricing/', { formats: ['markdown', 'html'], monitor: true });
+    assert.equal(server.last('POST /robots').json.meta.name, first);
+    await maxun.scrape('https://maxun.dev/pricing/', { formats: ['markdown'] });
+    assert.notEqual(server.last('POST /robots').json.meta.name, first);
+
+    await maxun.scrape('https://maxun.dev', { name: 'Home', smartQueries: ' Price? ' });
+    assert.equal(server.last('POST /robots').json.meta.name, 'Home');
+    assert.equal(server.last('POST /robots').json.meta.promptInstructions, 'Price?');
+
+    // The older create(name, url) still works.
     await maxun.scrape.create('S2', 'https://e.com');
-    assert.deepEqual(server.last('POST /robots').json.meta.formats, ['markdown']);
+    assert.equal(server.last('POST /robots').json.meta.name, 'S2');
   });
 
-  test('scrape rejects unknown formats before sending', async () => {
-    await assert.rejects(maxun.scrape('S', 'https://e.com', { formats: ['pdf' as any] }), /Invalid formats/);
+  test('the old name-first order gives a clear error', async () => {
+    await assert.rejects((maxun.scrape as any)('My robot', 'https://e.com'), /options object/);
+    await assert.rejects(maxun.scrape('My robot'), /URL first/);
+    assert.throws(() => maxun.extract('Products'), /URL first/);
+    await assert.rejects(maxun.scrape('https://e.com', { formats: ['pdf' as any] }), /Invalid formats/);
     assert.equal(server.calls.length, 0);
   });
 
-  test('crawl fills in working defaults', async () => {
+  test('crawl takes the URL and flat options', async () => {
     server.on('POST /crawl', { status: 201, body: { data: robotRecord('r1', 'crawl') } });
-    await maxun.crawl('C', 'https://e.com');
-    assert.deepEqual(server.last('POST /crawl').json, {
-      url: 'https://e.com',
-      name: 'C',
-      crawlConfig: { mode: 'domain', limit: 50, maxDepth: 3, respectRobots: true, useSitemap: true, followLinks: true },
+    await maxun.crawl('https://docs.e.com', { limit: 5, maxDepth: 2, includePaths: ['/blog/*'], formats: ['text'] });
+    const sent = server.last('POST /crawl').json;
+    assert.equal(sent.url, 'https://docs.e.com');
+    assert.deepEqual(sent.formats, ['text']);
+    assert.deepEqual(sent.crawlConfig, {
+      mode: 'domain', limit: 5, maxDepth: 2, includePaths: ['/blog/*'],
+      respectRobots: true, useSitemap: true, followLinks: true,
+    });
+    assert.match(sent.name, NAME('Crawl', 'docs.e.com'));
+
+    await maxun.crawl('https://e.com');
+    assert.deepEqual(server.last('POST /crawl').json.crawlConfig, {
+      mode: 'domain', limit: 50, maxDepth: 3, respectRobots: true, useSitemap: true, followLinks: true,
     });
   });
 
-  test('crawl with partial config and monitoring', async () => {
+  test('crawl monitoring', async () => {
     server.on('POST /crawl', { status: 201, body: { data: robotRecord('r1', 'crawl') } });
     server.on('PUT /robots/r1', { body: { data: robotRecord('r1', 'crawl', { compareRuns: true }) } });
-    const robot = await maxun.crawl('C', 'https://e.com', { limit: 5, includePaths: ['/blog'] }, { monitor: true });
-    const cfg = server.last('POST /crawl').json.crawlConfig;
-    assert.equal(cfg.limit, 5);
-    assert.deepEqual(cfg.includePaths, ['/blog']);
-    assert.equal(cfg.maxDepth, 3);
+    const robot = await maxun.crawl('https://e.com', { monitor: true });
     assert.deepEqual(server.last('PUT /robots/r1').json, { meta: { compareRuns: true } });
     assert.equal(robot.isMonitoring, true);
   });
 
-  test('search: config object, time range and query shorthand', async () => {
+  test('search takes the query and flat options', async () => {
     server.on('POST /search', { status: 201, body: { data: robotRecord('r1', 'search') } });
-    await maxun.search('Q', { query: 'ai', mode: 'discover', timeRange: 'week', limit: 5 });
-    assert.deepEqual(server.last('POST /search').json.searchConfig, {
-      query: 'ai', mode: 'discover', limit: 5, filters: { timeRange: 'week' },
-    });
-    await maxun.search('Q2', 'just a query');
+    await maxun.search('AI model releases', { mode: 'discover', timeRange: 'week', limit: 5 });
+    const sent = server.last('POST /search').json;
+    assert.deepEqual(sent.searchConfig, { query: 'AI model releases', mode: 'discover', limit: 5, filters: { timeRange: 'week' } });
+    assert.match(sent.name, NAME('Search', 'AI model releases'));
+    await maxun.search('just a query', { mode: undefined, limit: undefined });
     assert.deepEqual(server.last('POST /search').json.searchConfig, { query: 'just a query', mode: 'scrape', limit: 10 });
   });
 
-  test('extract builder', async () => {
+  test('extract(url) starts a selector robot on that page', async () => {
     server.on('POST /robots', { status: 201, body: { data: robotRecord('r1', 'extract') } });
     const robot = await maxun
-      .extract('E')
-      .navigate('https://e.com')
+      .extract('https://e.com', { monitor: true })
       .captureText({ Title: 'h1' })
       .captureList({ selector: 'li', maxItems: 5, pagination: { type: 'none' } })
       .scroll(2)
       .build();
     const sent = server.last('POST /robots').json;
-    assert.deepEqual(sent.meta, { name: 'E', type: 'extract' });
+    assert.equal(sent.meta.type, 'extract');
+    assert.equal(sent.meta.compareRuns, true);
+    assert.match(sent.meta.name, NAME('Extract', 'e.com'));
     const [main, blank] = sent.workflow;
     assert.equal(blank.where.url, 'about:blank');
     assert.deepEqual(blank.what[0], { action: 'goto', args: ['https://e.com'] });
@@ -149,31 +164,34 @@ describe('creating robots', () => {
     assert.deepEqual(main.what[1].args[0], { itemSelector: 'li', maxItems: 5, pagination: { type: 'none', selector: null } });
     assert.deepEqual(main.what[2].args, [2]);
     assert.equal(robot.type, 'extract');
+
+    const awaited = await maxun.extract('https://e.com', { name: 'Titles' }).captureText({ T: 'h1' });
+    assert.equal(awaited.id, 'r1');
+    assert.equal(server.last('POST /robots').json.meta.name, 'Titles');
+
+    assert.throws(() => (maxun.extract as any)(), /needs a URL/);
+    assert.throws(() => (maxun.extract as any)('https://e.com', { llmProvider: 'ollama' }), TypeError);
+    assert.throws(() => new Extract({ apiKey: 'k', baseUrl: server.baseUrl }).create('E').captureText({ T: 'h1' }), /navigate/);
   });
 
-  test('awaiting the builder still works, and monitoring can be set from the call', async () => {
-    server.on('POST /robots', { status: 201, body: { data: robotRecord('r1', 'extract') } });
-    const robot = await maxun.extract('E', { monitor: true }).navigate('https://e.com').captureText({ T: 'h1' });
-    assert.equal(robot.id, 'r1');
-    assert.deepEqual(server.last('POST /robots').json.meta, { name: 'E', type: 'extract', compareRuns: true });
-  });
-
-  test('builder steps need navigate() first', () => {
-    assert.throws(() => maxun.extract('E').captureText({ T: 'h1' }), /navigate/);
-  });
-
-  test('extract from a prompt', async () => {
+  test('extract with a prompt, with or without a URL', async () => {
     server.on('POST /extract/llm', { body: { success: true, data: { robotId: 'r9' } } });
     server.on('GET /robots/r9', { body: { data: robotRecord('r9', 'extract') } });
-    const robot = await maxun.extract('P', { prompt: 'get prices', url: 'https://e.com' });
-    assert.deepEqual(server.last('POST /extract/llm').json, { prompt: 'get prices', url: 'https://e.com', robotName: 'P' });
+    const robot = await maxun.extract('https://e.com', { prompt: 'get prices', llmProvider: 'ollama' });
+    const sent = server.last('POST /extract/llm').json;
+    assert.equal(sent.prompt, 'get prices');
+    assert.equal(sent.url, 'https://e.com');
+    assert.equal(sent.llmProvider, 'ollama');
+    assert.match(sent.robotName, NAME('Extract', 'e.com'));
     assert.equal(robot.id, 'r9');
+
+    await maxun.extract({ prompt: 'YC companies and batches' });
+    assert.equal(server.last('POST /extract/llm').json.url, undefined);
+    assert.match(server.last('POST /extract/llm').json.robotName, NAME('Extract', 'YC companies and batches'));
 
     await maxun.extract.extract({ prompt: 'get prices', llmProvider: 'ollama', robotName: 'P' });
     assert.deepEqual(server.last('POST /extract/llm').json, { prompt: 'get prices', robotName: 'P', llmProvider: 'ollama' });
-
-    assert.throws(() => (maxun.extract as any)('E', { url: 'https://e.com' }), TypeError);
-    await assert.rejects(maxun.extract('P', { prompt: 'x', llmProvider: 'openai' }), /llmApiKey/);
+    await assert.rejects(maxun.extract({ prompt: 'x', llmProvider: 'openai' }), /llmApiKey/);
   });
 });
 
@@ -493,7 +511,7 @@ describe('change monitoring', () => {
   test('warns when an existing extract robot is returned unchanged', async () => {
     server.on('POST /robots', { body: { data: robotRecord('r1', 'extract'), existing: true } });
     const warnings = await captureWarnings(() =>
-      maxun.extract('E').navigate('https://e.com').captureText({ T: 'h1' }).build()
+      maxun.extract('https://e.com', { name: 'E' }).captureText({ T: 'h1' }).build()
     );
     assert.ok(warnings.some((w) => /NOT saved/.test(w)));
   });
@@ -558,12 +576,6 @@ describe('legacy classes', () => {
 // ---------- review follow-ups ----------
 
 describe('edge cases', () => {
-  test('search ignores fields explicitly set to undefined', async () => {
-    server.on('POST /search', { status: 201, body: { data: robotRecord('r1', 'search') } });
-    await maxun.search('Q', { query: 'q', mode: undefined, limit: undefined });
-    assert.deepEqual(server.last('POST /search').json.searchConfig, { query: 'q', mode: 'scrape', limit: 10 });
-  });
-
   test('callable resources still behave like the resource object', () => {
     assert.ok(maxun.scrape instanceof Scrape);
     assert.equal(maxun.scrape.constructor, Scrape);
@@ -577,5 +589,84 @@ describe('edge cases', () => {
     const result = await maxun.client.executeRobot('r1');
     assert.ok(result instanceof RunResult);
     assert.equal(result.markdown, '# Hi');
+  });
+});
+
+// ---------- clean output ----------
+
+describe('printing robots, runs and clients', () => {
+  test('robots print as id, name and type; the client and API key never show', async () => {
+    const { inspect } = await import('util');
+    const client = new (await import('../src')).Client({ apiKey: 'secret-key', baseUrl: server.baseUrl });
+    const robot = new Robot(client, robotRecord('f48', 'extract', { name: 'Quotes' }) as any);
+    assert.equal(inspect(robot), "{ id: 'f48', name: 'Quotes', type: 'extract' }");
+    assert.equal(JSON.stringify([robot]), '[{"id":"f48","name":"Quotes","type":"extract"}]');
+    assert.ok(!inspect(client, { depth: 5 }).includes('secret-key'));
+    assert.ok(!JSON.stringify(client).includes('secret-key'));
+    assert.ok(!inspect(maxun, { depth: 6 }).includes("apiKey: 'k'"));
+    assert.equal(robot.getData().recording_meta.id, 'f48');
+  });
+
+  test('runs are summaries with their output in run.result', async () => {
+    const { inspect } = await import('util');
+    const raw = {
+      id: '3faa', runId: 'bdae', robotMetaId: '2c56', robotId: 'db-2c56', name: 'Example', status: 'success',
+      startedAt: '10/1/2026, 12:46:25 AM', finishedAt: '10/1/2026, 12:47:14 AM',
+      log: 'x'.repeat(1000), interpreterSettings: { maxConcurrency: 1 },
+      serializableOutput: {
+        scrapeSchema: { Title: 'Hi' },
+        scrapeList: { 'List 1': [{ a: 1 }] },
+        markdown: [{ content: '# Hi' }],
+        _comparison: { changedFormats: ['markdown'] },
+      },
+      binaryOutput: { 'Screenshot 1': 'https://s/1.png' },
+      hasChanges: true,
+    };
+    server.on('GET /robots/r1', { body: { data: robotRecord() } });
+    server.on('GET /robots/r1/runs', { body: { data: [raw, { ...raw, runId: 'old', startedAt: '', finishedAt: '' }] } });
+    server.on('GET /robots/r1/runs/bdae', { body: { data: raw } });
+    const robot = await maxun.robots.get('r1');
+
+    const runs = await robot.getRuns();
+    const summary = {
+      id: '3faa', runId: 'bdae', robotId: '2c56', name: 'Example', status: 'success',
+      startedAt: '2026-10-01T00:46:25Z', finishedAt: '2026-10-01T00:47:14Z',
+    };
+    assert.deepEqual(runs[0].toJSON(), summary);
+    assert.deepEqual(JSON.parse(JSON.stringify(runs[0])), summary);
+    assert.equal(inspect(runs[0]), inspect(summary));
+    assert.ok(!inspect(runs).includes('serializableOutput') && !inspect(runs).includes('xxxx'));
+    assert.equal(runs[1].startedAt, null);
+    assert.equal(runs[0].robotMetaId, '2c56');
+    assert.equal(runs[0].getData().log.length, 1000);
+
+    const result = runs[0].result;
+    assert.ok(result instanceof RunResult);
+    assert.deepEqual(result.textData, { Title: 'Hi' });
+    assert.deepEqual(result.listData, [{ a: 1 }]);
+    assert.equal(result.markdown, '# Hi');
+    assert.deepEqual(result.screenshots, ['https://s/1.png']);
+    assert.equal(result.hasChanges, true);
+    assert.deepEqual(result.changedFormats, ['markdown']);
+
+    assert.equal((await robot.getRun('bdae')).runId, 'bdae');
+    assert.ok(['bdae', 'old'].includes((await robot.getLatestRun())!.runId));
+  });
+});
+
+describe('documents reuse generated names', () => {
+  test('a conflict on a generated name returns the existing robot', async () => {
+    const existing = robotRecord('d9', 'doc-extract');
+    let sentName = '';
+    server.on('POST /robots/document', (req) => {
+      sentName = /name="robotName"\r\n\r\n([^\r]*)/.exec(req.raw.toString())![1];
+      existing.recording_meta.name = sentName;
+      return { status: 409, body: { error: 'exists' } };
+    });
+    server.on('GET /robots', () => ({ body: { data: [existing] } }));
+    const robot = await maxun.documents.extract(Buffer.from('x'), 'totals', { fileName: 'a.pdf' });
+    assert.match(sentName, /^Document: a\.pdf \[[0-9a-f]{6}\]$/);
+    assert.equal(robot.id, 'd9');
+    await assert.rejects(maxun.documents.extract(Buffer.from('x'), 'totals', { fileName: 'a.pdf', name: 'Mine' }), ConflictError);
   });
 });
