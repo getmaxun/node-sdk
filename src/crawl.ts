@@ -5,7 +5,7 @@
 import { CrawlConfig, DEFAULT_CRAWL_CONFIG, Format, LlmOptions, RobotType } from './types';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
-import { checkFormats, checkOptions } from './scrape';
+import { checkFormats, checkKeys, checkOptions, CRAWL_KEYS } from './scrape';
 import { autoName, checkUrl, describeUrl } from './naming';
 import { buildLlmPayload } from './client/maxun-client';
 
@@ -66,6 +66,7 @@ export class Crawl extends Resource {
    */
   async fromUrl(url: string, options: CrawlCallOptions = {}): Promise<Robot> {
     checkOptions(options, 'maxun.crawl(url, options)');
+    checkKeys(options, CRAWL_KEYS, 'maxun.crawl(url, options)');
     const target = checkUrl(url, 'maxun.crawl(url, options)');
     const { name, formats, monitor, llmProvider, llmModel, llmApiKey, llmBaseUrl, ...configInput } = options;
     const llm = { llmProvider, llmModel, llmApiKey, llmBaseUrl };
@@ -77,14 +78,12 @@ export class Crawl extends Resource {
       type: 'crawl',
       url: target,
       crawlConfig,
-      formats: checkFormats(formats),
+      formats: checkFormats(formats) || ['markdown'],
       monitor,
       ...buildLlmPayload(llm),
     };
-    return await this.create(name || autoName('Crawl', describeUrl(target), settings), target, crawlConfig, {
-      formats,
-      monitor,
-      ...llm,
-    });
+    return await this.createReusing(name, autoName('Crawl', describeUrl(target), settings), (robotName) =>
+      this.create(robotName, target, crawlConfig, { formats, monitor, ...llm })
+    );
   }
 }

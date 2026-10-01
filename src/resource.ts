@@ -4,7 +4,7 @@
 
 import { Client } from './client/maxun-client';
 import { Robot, MONITORABLE_TYPES } from './robot/robot';
-import { Config, RobotData, RobotType } from './types';
+import { Config, ConflictError, RobotData, RobotType } from './types';
 
 /** Fetch every robot once and keep those whose type is in `types` (all if empty). */
 export async function listRobots(client: Client, types?: RobotType[] | null): Promise<Robot[]> {
@@ -36,6 +36,26 @@ export abstract class Resource {
       }
     }
     return robot;
+  }
+
+  /**
+   * Create a robot. When the SDK generated the name, a name clash means a robot
+   * was already made from the same settings, so that robot is returned instead
+   * of throwing ConflictError.
+   */
+  protected async createReusing(
+    name: string | undefined,
+    defaultName: string,
+    create: (robotName: string) => Promise<Robot>
+  ): Promise<Robot> {
+    try {
+      return await create(name || defaultName);
+    } catch (error) {
+      if (name || !(error instanceof ConflictError)) throw error;
+      const existing = (await this.list()).find((robot) => robot.name === defaultName);
+      if (!existing) throw error;
+      return existing;
+    }
   }
 
   /**

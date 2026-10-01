@@ -670,3 +670,55 @@ describe('documents reuse generated names', () => {
     await assert.rejects(maxun.documents.extract(Buffer.from('x'), 'totals', { fileName: 'a.pdf', name: 'Mine' }), ConflictError);
   });
 });
+
+describe('review follow-ups', () => {
+  test('unknown or old-style options are rejected, not sent', async () => {
+    await assert.rejects(maxun.crawl('https://e.com', { max_depth: 1 } as any), /unknown option: max_depth/);
+    await assert.rejects(maxun.crawl('https://e.com', { smartQueries: 'x' } as any), /unknown option: smartQueries/);
+    await assert.rejects(maxun.search('My search', { query: 'AI' } as any), /unknown option: query/);
+    await assert.rejects(maxun.scrape('https://e.com', { robotName: 'x' } as any), /unknown option: robotName/);
+    await assert.rejects(maxun.extract('https://e.com', { prompt: 'x', url: 'y' } as any), /unknown option: url/);
+    assert.equal(server.calls.length, 0);
+  });
+
+  test('extract({ prompt, url }) names the robot after the URL', async () => {
+    server.on('POST /extract/llm', { body: { data: { robotId: 'r9' } } });
+    server.on('GET /robots/r9', { body: { data: robotRecord('r9', 'extract') } });
+    await maxun.extract({ prompt: ' prices ', url: 'https://shop.e.com' });
+    const sent = server.last('POST /extract/llm').json;
+    assert.equal(sent.url, 'https://shop.e.com');
+    assert.equal(sent.prompt, 'prices');
+    assert.match(sent.robotName, /^Extract: shop\.e\.com \[/);
+  });
+
+  test('generated names reuse the robot on a conflict; chosen names still throw', async () => {
+    let created = '';
+    server.on('POST /robots', (req) => {
+      created = req.json.meta.name;
+      return { status: 409, body: { error: 'exists with a different configuration' } };
+    });
+    server.on('GET /robots', () => ({ body: { data: [robotRecord('old', 'scrape', { name: created })] } }));
+    assert.equal((await maxun.scrape('https://e.com')).id, 'old');
+    await assert.rejects(maxun.scrape('https://e.com', { name: 'Mine' }), ConflictError);
+  });
+
+  test('default formats do not change a generated name', async () => {
+    server.on('POST /crawl', { status: 201, body: { data: robotRecord('r1', 'crawl') } });
+    await maxun.crawl('https://e.com');
+    const first = server.last('POST /crawl').json.name;
+    await maxun.crawl('https://e.com', { formats: ['markdown'] });
+    assert.equal(server.last('POST /crawl').json.name, first);
+  });
+
+  test('timestamps with a space are read as UTC', async () => {
+    const { toIso } = await import('../src/utils');
+    assert.equal(toIso('2026-10-01 10:00:00'), '2026-10-01T10:00:00Z');
+  });
+
+  test('the client never shows its key, even with showHidden', async () => {
+    const { inspect } = await import('util');
+    const client = new (await import('../src')).Client({ apiKey: 'secret-key', baseUrl: server.baseUrl });
+    assert.ok(!inspect(client, { showHidden: true, depth: 10 }).includes('secret-key'));
+    assert.ok(!inspect(new Maxun({ apiKey: 'secret-key', baseUrl: server.baseUrl }), { showHidden: true, depth: 10 }).includes('secret-key'));
+  });
+});

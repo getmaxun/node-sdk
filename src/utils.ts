@@ -92,8 +92,10 @@ export function parseTime(value: unknown): number | null {
     return Date.UTC(Number(year), Number(month) - 1, Number(day), h, Number(minute), Number(second));
   }
   if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
-    const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(text);
-    const time = new Date(hasZone || !text.includes('T') ? text : `${text}Z`).getTime();
+    let iso = text.replace(/^(\d{4}-\d{2}-\d{2})[ T]/, '$1T');
+    if (!iso.includes('T')) iso += 'T00:00:00';
+    if (!/(Z|[+-]\d{2}:?\d{2})$/i.test(iso)) iso += 'Z';
+    const time = new Date(iso).getTime();
     return Number.isNaN(time) ? null : time;
   }
   return null;

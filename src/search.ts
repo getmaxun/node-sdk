@@ -5,7 +5,7 @@
 import { Format, LlmOptions, RobotType, SearchConfig, SearchMode, SearchTimeRange } from './types';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
-import { checkFormats, checkOptions } from './scrape';
+import { checkFormats, checkKeys, checkOptions, SEARCH_KEYS } from './scrape';
 import { autoName, shorten } from './naming';
 import { buildLlmPayload } from './client/maxun-client';
 import { warn } from './utils';
@@ -77,12 +77,18 @@ export class Search extends Resource {
    */
   async fromQuery(query: string, options: SearchCallOptions = {}): Promise<Robot> {
     checkOptions(options, 'maxun.search(query, options)');
+    checkKeys(options, SEARCH_KEYS, 'maxun.search(query, options)');
     if (typeof query !== 'string' || !query.trim()) {
       throw new Error("maxun.search(query, options) needs a search query, e.g. maxun.search('AI news').");
     }
     const { name, mode = 'scrape', limit = 10, timeRange, formats, ...llm } = options;
     const searchConfig: SearchConfig = { query: query.trim(), mode, limit, ...(timeRange ? { timeRange } : {}) };
-    const settings = { type: 'search', searchConfig, formats: checkFormats(formats), ...buildLlmPayload(llm) };
+    const settings = {
+      type: 'search',
+      searchConfig,
+      formats: checkFormats(formats) || (mode === 'scrape' ? ['markdown'] : undefined),
+      ...buildLlmPayload(llm),
+    };
     return await this.create(name || autoName('Search', shorten(query), settings), searchConfig, { formats, ...llm });
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import { createHash } from 'crypto';
-import { ConflictError, DOCUMENT_FORMATS, DocumentFormat, LlmOptions, RobotData, RobotType } from './types';
+import { DOCUMENT_FORMATS, DocumentFormat, LlmOptions, RobotType } from './types';
 import { Robot } from './robot/robot';
 import { Resource } from './resource';
 import { autoName } from './naming';
@@ -48,7 +48,7 @@ export class Documents extends Resource {
         fileName: doc.fileName,
         robotName,
       });
-      return robot;
+      return new Robot(this.client, robot);
     });
   }
 
@@ -72,27 +72,7 @@ export class Documents extends Resource {
         fileName: doc.fileName,
         robotName,
       });
-      return robot;
+      return new Robot(this.client, robot);
     });
-  }
-
-  /**
-   * Create the robot. When the name was generated, a name clash means the same
-   * file and settings were sent before, so the existing robot is returned (the
-   * server refuses to reuse document robot names).
-   */
-  private async createReusing(
-    name: string | undefined,
-    defaultName: string,
-    create: (robotName: string) => Promise<RobotData>
-  ): Promise<Robot> {
-    try {
-      return new Robot(this.client, await create(name || defaultName));
-    } catch (error) {
-      if (name || !(error instanceof ConflictError)) throw error;
-      const existing = (await this.list()).find((robot) => robot.name === defaultName);
-      if (!existing) throw error;
-      return existing;
-    }
   }
 }

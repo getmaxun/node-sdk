@@ -57,11 +57,11 @@ Everything hangs off `maxun`:
 | `maxun.documents.extract(file, prompt)` / `.parse(file)` | a robot that reads a PDF, DOCX, XLSX, CSV, JPG or PNG | `result.documentData` / `result.markdown` etc. |
 | `maxun.robots` | nothing; lists, finds and deletes robots of any type | |
 
-Each call takes what to work on first (a URL, a query or a file), then the settings as one options object. It returns a `Robot`, saved on your account; run it as often as you like.
+Each call takes what to work on first (a URL, a query or a file), then the settings as one options object. Unknown options throw instead of being silently sent. It returns a `Robot`, saved on your account; run it as often as you like.
 
 **Robot names.** Every call accepts `{ name }`. Leave it out and the SDK names the robot after what it does plus a short fingerprint of its settings, e.g. `Scrape: maxun.dev [3f2a1c]`. So:
 
-- Running the same call again reuses the same robot instead of creating a duplicate.
+- Running the same call again reuses the same robot instead of creating a duplicate. This holds even if you've edited that robot since, or a prompt robot found a different page the second time.
 - Changing any setting gives a new name, so it never clashes with the old robot.
 - The Python SDK generates the same names, so both SDKs share robots.
 

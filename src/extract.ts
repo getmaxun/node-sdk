@@ -8,9 +8,9 @@ import { Resource } from './resource';
 import { LlmOptions, RobotType } from './types';
 import { autoName, checkUrl, describeUrl, shorten } from './naming';
 import { buildLlmPayload } from './client/maxun-client';
-import { checkOptions } from './scrape';
+import { checkKeys, checkOptions, PROMPT_KEYS } from './scrape';
 
-/** Options for `maxun.extract(url, { prompt })` or `maxun.extract({ prompt })`. */
+/** Options for `maxun.extract(url, { prompt })`, or `maxun.extract({ prompt, url? })`. */
 export interface ExtractPromptCallOptions extends LlmOptions {
   /** What to extract, in plain English. */
   prompt: string;
@@ -110,18 +110,15 @@ export class Extract extends Resource {
    * given. Used by `maxun.extract(url, { prompt })` and `maxun.extract({ prompt })`.
    */
   async fromPromptCall(url: string | undefined, options: ExtractPromptCallOptions): Promise<Robot> {
+    checkKeys(options, PROMPT_KEYS, url === undefined ? 'maxun.extract({ prompt })' : 'maxun.extract(url, { prompt })');
     const target = url === undefined ? undefined : checkUrl(url, 'maxun.extract(url, { prompt })');
     if (!options.prompt || !options.prompt.trim()) throw new Error('prompt is required');
     const { name, prompt, monitor, ...llm } = options;
     const settings = { type: 'extract', prompt: prompt.trim(), url: target, monitor, ...buildLlmPayload(llm) };
     const subject = target ? describeUrl(target) : shorten(prompt);
-    return await this.fromPrompt({
-      prompt,
-      url: target,
-      monitor,
-      ...llm,
-      name: name || autoName('Extract', subject, settings),
-    });
+    return await this.createReusing(name, autoName('Extract', subject, settings), (robotName) =>
+      this.fromPrompt({ prompt: prompt.trim(), url: target, monitor, ...llm, name: robotName })
+    );
   }
 
   /**

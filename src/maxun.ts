@@ -48,7 +48,7 @@ export type SearchResource = Search & ((query: string, options?: SearchCallOptio
  */
 export interface ExtractCall {
   (url: string, options: ExtractPromptCallOptions): Promise<Robot>;
-  (options: ExtractPromptCallOptions): Promise<Robot>;
+  (options: ExtractPromptCallOptions & { url?: string }): Promise<Robot>;
   (url: string, options?: ExtractBuilderCallOptions): ExtractBuilder;
 }
 export type ExtractResource = Extract & ExtractCall;
@@ -109,7 +109,8 @@ export class Maxun {
         if (urlOrOptions.prompt === undefined) {
           throw new TypeError("maxun.extract(options) needs { prompt }; for a selector robot pass the URL: maxun.extract(url).");
         }
-        return extract.fromPromptCall(undefined, urlOrOptions);
+        const { url, ...rest } = urlOrOptions;
+        return extract.fromPromptCall(url, rest);
       }
       if (urlOrOptions === undefined) {
         throw new TypeError(

@@ -45,6 +45,23 @@ export function checkOptions(options: unknown, call: string): void {
   }
 }
 
+/** Reject options this call does not know about (typos, or settings from the old call shape). */
+export function checkKeys(options: object, allowed: string[], call: string): void {
+  const unknown = Object.keys(options).filter((key) => !allowed.includes(key));
+  if (unknown.length > 0) {
+    throw new TypeError(`${call} got unknown option${unknown.length > 1 ? 's' : ''}: ${unknown.join(', ')}. Allowed: ${allowed.join(', ')}.`);
+  }
+}
+
+const LLM_KEYS = ['llmProvider', 'llmModel', 'llmApiKey', 'llmBaseUrl'];
+export const SCRAPE_KEYS = ['name', 'formats', 'smartQueries', 'monitor', ...LLM_KEYS];
+export const CRAWL_KEYS = [
+  'name', 'mode', 'limit', 'maxDepth', 'includePaths', 'excludePaths', 'useSitemap', 'followLinks',
+  'respectRobots', 'formats', 'monitor', ...LLM_KEYS,
+];
+export const SEARCH_KEYS = ['name', 'mode', 'limit', 'timeRange', 'formats', ...LLM_KEYS];
+export const PROMPT_KEYS = ['prompt', 'name', 'monitor', ...LLM_KEYS];
+
 export function checkFormats(formats: Format[] | undefined, allowed: string[] = SCRAPE_FORMATS): Format[] | undefined {
   if (!formats) return undefined;
   const list = Array.isArray(formats) ? formats : [formats as unknown as Format];
@@ -96,6 +113,7 @@ export class Scrape extends Resource {
    */
   async fromUrl(url: string, options: ScrapeCallOptions = {}): Promise<Robot> {
     checkOptions(options, 'maxun.scrape(url, options)');
+    checkKeys(options, SCRAPE_KEYS, 'maxun.scrape(url, options)');
     const target = checkUrl(url, 'maxun.scrape(url, options)');
     const { name, ...rest } = options;
     const settings = {
@@ -106,6 +124,8 @@ export class Scrape extends Resource {
       monitor: rest.monitor,
       ...buildLlmPayload(rest),
     };
-    return await this.create(name || autoName('Scrape', describeUrl(target), settings), target, rest);
+    return await this.createReusing(name, autoName('Scrape', describeUrl(target), settings), (robotName) =>
+      this.create(robotName, target, rest)
+    );
   }
 }

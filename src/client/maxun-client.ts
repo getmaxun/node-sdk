@@ -8,6 +8,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
+import { inspect } from 'util';
 import http from 'http';
 import https from 'https';
 import FormData from 'form-data';
@@ -208,6 +209,15 @@ export class Client {
         throw this.handleError(error);
       }
     );
+  }
+
+  /** Printing a client shows only where it points, never the API key. */
+  [inspect.custom](): string {
+    return `Client { baseUrl: '${this.baseUrl}' }`;
+  }
+
+  toJSON(): { baseUrl: string } {
+    return { baseUrl: this.baseUrl };
   }
 
   /**

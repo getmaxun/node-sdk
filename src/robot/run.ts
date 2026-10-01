@@ -148,6 +148,10 @@ export class Run implements RunSummary {
     };
   }
 
+  toString(): string {
+    return `Run(id=${this.id}, runId=${this.runId}, status=${this.status})`;
+  }
+
   [inspect.custom](_depth: number, options: any, inspectFn: typeof inspect = inspect): string {
     return inspectFn(this.toJSON(), options);
   }
