@@ -144,7 +144,7 @@ describe('creating robots', () => {
     assert.equal(sent.name, 'AI news');
     assert.deepEqual(sent.searchConfig, { query: 'AI model releases', mode: 'discover', limit: 5, filters: { timeRange: 'week' } });
     await maxun.search('Plain', 'just a query', { mode: undefined, limit: undefined });
-    assert.deepEqual(server.last('POST /search').json.searchConfig, { query: 'just a query', mode: 'scrape', limit: 10 });
+    assert.deepEqual(server.last('POST /search').json.searchConfig, { query: 'just a query', mode: 'discover', limit: 10 });
     await assert.rejects(maxun.search('AI', 'q', { query: 'AI' } as any), /unknown option: query/);
   });
 

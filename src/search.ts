@@ -16,7 +16,7 @@ export interface SearchCreateOptions extends LlmOptions {
 
 /** Options for `maxun.search(name, query, options)`. */
 export interface SearchCallOptions extends SearchCreateOptions {
-  /** `'discover'` returns titles, URLs and snippets; `'scrape'` (default) also scrapes every result. */
+  /** `'discover'` (default) returns titles, URLs and snippets; `'scrape'` also opens and scrapes every result. */
   mode?: SearchMode;
   /** Number of results (default 10). */
   limit?: number;
@@ -31,8 +31,8 @@ export class Search extends Resource {
    * Create a search robot. Run it with `await robot.run()` and read `result.searchData`.
    *
    * @param searchConfig - A SearchConfig, or just the query string.
-   *   `mode: 'discover'` returns titles/URLs/snippets only; `mode: 'scrape'`
-   *   (default) also scrapes each result.
+   *   `mode: 'discover'` (default) returns titles/URLs/snippets only;
+   *   `mode: 'scrape'` also scrapes each result.
    */
   async create(name: string, searchConfig: SearchConfig | string, options?: SearchCreateOptions): Promise<Robot> {
     if (!searchConfig) {
@@ -45,7 +45,7 @@ export class Search extends Resource {
 
     const { timeRange, ...rest } = input;
     const given = Object.fromEntries(Object.entries(rest).filter(([, value]) => value !== undefined));
-    const config: SearchConfig = { mode: 'scrape', limit: 10, ...given } as SearchConfig;
+    const config: SearchConfig = { mode: 'discover', limit: 10, ...given } as SearchConfig;
     if (config.mode !== 'discover' && config.mode !== 'scrape') {
       throw new Error("mode must be 'discover' or 'scrape'");
     }
@@ -53,7 +53,7 @@ export class Search extends Resource {
       config.filters = { ...(config.filters || {}), timeRange };
     }
     if (options?.formats && config.mode === 'discover') {
-      warn("formats only apply in mode 'scrape'; a discover search returns result links only.");
+      warn("formats only apply in mode 'scrape'; a discover search returns result links only. Pass mode: 'scrape' to scrape each result.");
     }
 
     const { formats, ...llm } = options || {};
@@ -80,7 +80,7 @@ export class Search extends Resource {
     }
     checkOptions(options, call);
     checkKeys(options, SEARCH_KEYS, call);
-    const { mode = 'scrape', limit = 10, timeRange, formats, ...llm } = options;
+    const { mode = 'discover', limit = 10, timeRange, formats, ...llm } = options;
     const searchConfig: SearchConfig = { query: query.trim(), mode, limit, ...(timeRange ? { timeRange } : {}) };
     return await this.create(robotName, searchConfig, { formats, ...llm });
   }

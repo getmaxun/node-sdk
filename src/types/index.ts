@@ -421,8 +421,8 @@ export type SearchProvider = 'duckduckgo';
 export type SearchTimeRange = 'day' | 'week' | 'month' | 'year';
 
 /**
- * A web search (DuckDuckGo). `mode: 'discover'` returns titles, URLs and
- * snippets; `mode: 'scrape'` (default) also scrapes every result. `limit`
+ * A web search (DuckDuckGo). `mode: 'discover'` (default) returns titles, URLs
+ * and snippets; `mode: 'scrape'` also scrapes every result. `limit`
  * defaults to 10. `timeRange` is a shortcut for `filters.timeRange`.
  */
 export interface SearchConfig {
