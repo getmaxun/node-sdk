@@ -182,14 +182,14 @@ for (const page of result.crawlData) console.log(page.metadata.url);
 ### Search
 
 ```ts
-const robot = await maxun.search('AI news', 'AI model releases', { mode: 'discover', timeRange: 'week' });
+const robot = await maxun.search('AI news', 'AI model releases', { timeRange: 'week' });
 const result = await robot.run();
 result.searchData;
 ```
 
 | Option | Default | |
 |---|---|---|
-| `mode` | `'scrape'` | `'discover'` returns titles, URLs and snippets; `'scrape'` also opens each result and scrapes it |
+| `mode` | `'discover'` | `'discover'` returns titles, URLs and snippets; `'scrape'` also opens each result and scrapes it |
 | `limit` | `10` | number of results |
 | `timeRange` | any time | `'day'`, `'week'`, `'month'` or `'year'` |
 | `formats` | `['markdown']` | what to capture from each result in scrape mode |
@@ -471,7 +471,7 @@ Existing code keeps working. `new Extract(config)`, `new Scrape(config)`, `new C
   - Steps added before `navigate()` throw an error.
 - **Crawl and search defaults:**
   - Crawl configs now have working defaults. Before, leaving out `limit` or `maxDepth` crawled nothing. Because the defaults are now sent, re-creating a crawl robot from 0.0.x code under the same name can throw `ConflictError` (its stored settings differ); use a new name or delete the old robot.
-  - Search now sends `mode: 'scrape'` and `limit: 10` when you leave them out. Leaving out `mode` already scraped each result on the server; leaving out `limit` returned only the first page of results.
+  - Search now defaults to `mode: 'discover'` (titles, URLs and snippets) and `limit: 10`. Before, leaving out `mode` scraped every result on the server; pass `mode: 'scrape'` for that. Leaving out `limit` returned only the first page of results.
 - **Default URL is now Maxun Cloud** (`https://app.maxun.dev/api/sdk/`), the same as the Python SDK. It used to be `http://localhost:8080/api/sdk`; self-hosted users who relied on that default now need to set `baseUrl` or `MAXUN_BASE_URL`.
 - **Config:** `apiKey`, `baseUrl` and `teamId` fall back to `MAXUN_API_KEY`, `MAXUN_BASE_URL` and `MAXUN_TEAM_ID`. Creating a client with no API key anywhere now throws right away instead of failing on the first request.
 - **Types:** `Config.apiKey`, `ScheduleConfig.timezone`, `CrawlConfig.mode` and `RobotData.recording.meta` are now optional, since the SDK fills them in. Code that reads them as always present may need a `!` or a default. `RobotType` includes `doc-extract` and `doc-parse`, and pagination accepts `type: 'none'`.
