@@ -1,48 +1,29 @@
 /**
- * Form Filling and Screenshots Example
- *
- * This example demonstrates:
- * - Filling form inputs with type() action
- * - Automatic input type detection
- * - Taking full-page and viewport screenshots
+ * Type into a form, wait and take screenshots.
  */
-
 import 'dotenv/config';
-import { Extract } from 'maxun-sdk';
+import { Maxun } from 'maxun-sdk';
+
+const maxun = new Maxun();
 
 async function main() {
-  const extractor = new Extract({
-    apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL
-  });
+  const robot = await maxun
+    .extract('Form Fill Demo', 'https://practice.expandtesting.com/inputs')
+    .type('#input-text', 'John Doe')
+    .type('#input-number', '42')
+    .type('#input-password', 'SecurePassword123', 'password')
+    .wait(500)
+    .captureScreenshot('Full page')
+    .captureScreenshot('Viewport', { fullPage: false })
+    .build();
 
-  try {
-    const robot = await extractor
-      .create('Form Fill Demo')
-      .navigate('https://practice.expandtesting.com/inputs')
-      .type('#input-text', 'John Doe')
-      .type('#input-number', '42')
-      .type('#input-password', 'SecurePassword123')
-      .type('#input-date', '15-08-2024')
-      .captureScreenshot('Full Page', { fullPage: true })
-      .captureScreenshot('Viewport', { fullPage: false });
-
-    console.log(`Robot created: ${robot.id}`);
-
-    const result = await robot.run();
-
-    console.log('\nForm filling completed');
-    console.log('Screenshots captured:', Object.keys(result.data.binaryOutput || {}).length);
-
-  } catch (error: any) {
-    console.error('Error:', error.message);
-    process.exit(1);
+  const result = await robot.run();
+  for (const shot of result.screenshots || []) {
+    console.log(typeof shot === 'string' ? shot : shot.mimeType);
   }
 }
 
-if (!process.env.MAXUN_API_KEY) {
-  console.error('Error: MAXUN_API_KEY environment variable is required');
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
-}
-
-main();
+});

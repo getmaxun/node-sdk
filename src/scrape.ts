@@ -1,10 +1,12 @@
 /**
- * Scrape - Main class for the Scrape SDK
+ * Scrape - turn a single page into Markdown, HTML, text, links, a summary or screenshots.
  */
 
-import { Client, buildLlmPayload } from './client/maxun-client';
-import { Config, WorkflowFile, RobotData, Format, LlmOptions } from './types';
+import { buildLlmPayload } from './client/maxun-client';
+import { Format, LlmOptions, RobotType, SCRAPE_FORMATS, WorkflowFile } from './types';
 import { Robot } from './robot/robot';
+import { Resource } from './resource';
+import { checkName, checkUrl } from './naming';
 
 export interface ScrapeOptions extends LlmOptions {
   /**
@@ -23,42 +25,75 @@ export interface ScrapeOptions extends LlmOptions {
 
   /**
    * Optional Smart Queries prompt. After scraping, the LLM analyzes the page
-   * and returns an answer based on your instructions.
-   * Adds 2 extra credits per run on top of the base 1 scrape credit.
+   * and answers it on every run; read the answer from `result.smartQueryResult`.
    */
   smartQueries?: string;
-  /** Monitor this robot for changes between successful runs. */
+  /** Compare every run with the previous successful run. */
   monitor?: boolean;
 }
 
-export class Scrape {
-  private client: Client;
+/** Options for `maxun.scrape(name, url, options)`. */
+export type ScrapeCallOptions = ScrapeOptions;
 
-  constructor(config: Config) {
-    this.client = new Client(config);
+/** Reject an options argument that is not an object (usually the old name-first argument order). */
+export function checkOptions(options: unknown, call: string): void {
+  if (options !== undefined && (options === null || typeof options !== 'object' || Array.isArray(options))) {
+    throw new TypeError(`${call} takes the settings as one options object, e.g. { formats: ['markdown'] }.`);
   }
+}
+
+/** Reject options this call does not know about (typos, or settings from the old call shape). */
+export function checkKeys(options: object, allowed: string[], call: string): void {
+  const unknown = Object.keys(options).filter((key) => !allowed.includes(key));
+  if (unknown.length > 0) {
+    throw new TypeError(`${call} got unknown option${unknown.length > 1 ? 's' : ''}: ${unknown.join(', ')}. Allowed: ${allowed.join(', ')}.`);
+  }
+}
+
+const LLM_KEYS = ['llmProvider', 'llmModel', 'llmApiKey', 'llmBaseUrl'];
+export const SCRAPE_KEYS = ['formats', 'smartQueries', 'monitor', ...LLM_KEYS];
+export const CRAWL_KEYS = [
+  'mode', 'limit', 'maxDepth', 'includePaths', 'excludePaths', 'useSitemap', 'followLinks',
+  'respectRobots', 'formats', 'monitor', ...LLM_KEYS,
+];
+export const SEARCH_KEYS = ['mode', 'limit', 'timeRange', 'formats', ...LLM_KEYS];
+export const PROMPT_KEYS = ['prompt', 'monitor', ...LLM_KEYS];
+
+export function checkFormats(formats: Format[] | undefined, allowed: string[] = SCRAPE_FORMATS): Format[] | undefined {
+  if (!formats) return undefined;
+  const list = Array.isArray(formats) ? formats : [formats as unknown as Format];
+  const invalid = list.filter((f) => !allowed.includes(f));
+  if (invalid.length > 0) {
+    throw new Error(`Invalid formats: ${invalid.join(', ')}. Use any of: ${allowed.join(', ')}.`);
+  }
+  return list;
+}
+
+export class Scrape extends Resource {
+  protected readonly robotTypes: RobotType[] = ['scrape'];
 
   /**
-   * Create a new scraping robot
-   * @param name - Name of the scraping robot
-   * @param url - URL to scrape
-   * @param options - Optional scraping options (formats)
-   * @returns Promise<Robot>
+   * Create a scrape robot. Run it with `await robot.run()`.
+   *
+   * @param name - Robot name. Creating again with the same name and settings
+   *   returns the existing robot; different settings raise ConflictError.
+   * @param url - Page to scrape
+   * @param options - formats, smartQueries, monitor and (self-hosted only) llm* settings
    */
   async create(name: string, url: string, options?: ScrapeOptions): Promise<Robot> {
     if (!url) {
       throw new Error('URL is required');
     }
 
+    const smartQueries = options?.smartQueries?.trim();
     const workflowFile: WorkflowFile = {
       meta: {
         name,
-        id: `robot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        robotType: 'scrape',
+        type: 'scrape',
         url,
-        formats: options?.formats || ['markdown'],
+        formats: checkFormats(options?.formats) || ['markdown'],
         ...(options?.monitor !== undefined ? { monitor: options.monitor } : {}),
-        ...(options?.smartQueries ? { smartQueries: options.smartQueries } : {}),
+        ...(smartQueries ? { promptInstructions: smartQueries } : {}),
         ...buildLlmPayload(options || {}),
       } as any,
       workflow: [],
@@ -66,5 +101,20 @@ export class Scrape {
 
     const robot = await this.client.createRobot(workflowFile);
     return new Robot(this.client, robot);
+  }
+
+  /**
+   * Create a scrape robot. Same as `maxun.scrape(name, url, options)`:
+   *
+   *     const robot = await maxun.scrape('Maxun home', 'https://maxun.dev', { formats: ['markdown', 'html'] });
+   */
+  async fromUrl(name: string, url: string, options: ScrapeCallOptions = {}): Promise<Robot> {
+    const call = 'maxun.scrape(name, url, options)';
+    const target = checkUrl(url, call, name);
+    const robotName = checkName(name, call);
+    checkOptions(options, call);
+    checkKeys(options, SCRAPE_KEYS, call);
+    checkFormats(options.formats);
+    return await this.create(robotName, target, options);
   }
 }

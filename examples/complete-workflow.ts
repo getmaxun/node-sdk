@@ -1,82 +1,27 @@
 /**
- * Complete Workflow Example
- * Demonstrates a real-world use case combining multiple features:
- * - Data extraction with pagination
- * - Scheduling
- * - Webhooks
+ * A realistic setup: a list robot that runs daily, watches for changes and
+ * calls a webhook.
  */
-
 import 'dotenv/config';
-import { Extract } from 'maxun-sdk';
+import { Maxun } from 'maxun-sdk';
 
-async function completeWorkflowExample() {
-  console.log('=== Complete Workflow Example ===\n');
+const maxun = new Maxun();
 
-  const extractor = new Extract({
-    apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL
-  });
+async function main() {
+  const robot = await maxun
+    .extract('Trending Books Daily', 'https://openlibrary.org/trending/daily')
+    .captureList({ selector: 'li.searchResultItem', maxItems: 25 })
+    .monitorChanges()
+    .build();
 
-  try {
-    console.log('Creating full extraction robot...');
-    const robot = await extractor
-      .create('Trending Books Daily')
-      .navigate('https://openlibrary.org/trending/daily')
-      .captureList({
-        selector: 'li.searchResultItem.sri--w-main',
-        pagination: {
-          type: 'clickNext',
-          selector: 'a[data-ol-link-track="Pager|Next"]'
-        },
-        maxItems: 25
-      });
+  await robot.addWebhook('https://your-server.example/maxun-hook');
+  const schedule = await robot.schedule({ runEvery: 1, runEveryUnit: 'DAYS', timezone: 'UTC', atTimeStart: '08:00' });
 
-    console.log(`✓ Robot created: ${robot.id}\n`);
-
-    console.log('Setting up webhook for notifications...');
-    await robot.addWebhook({
-      url: 'https://your-webhook-endpoint.com/notifications',
-      events: ['run.completed', 'run.failed']
-    });
-    console.log('✓ Webhook configured\n');
-
-    console.log('Scheduling robot to run every 10 minutes...');
-    await robot.schedule({
-      runEvery: 1,
-      runEveryUnit: 'DAYS',
-      timezone: 'UTC'
-    });
-    console.log('✓ Robot scheduled\n');
-
-    console.log('Robot Configuration Summary:');
-    console.log(`  Name: ${robot.name}`);
-    console.log(`  ID: ${robot.id}`);
-
-    const schedule = robot.getSchedule();
-    console.log(`  Schedule: Every ${schedule?.runEvery} ${schedule?.runEveryUnit}`);
-
-    const webhooks = robot.getWebhooks();
-    console.log(`  Webhooks: ${webhooks?.length || 0} configured`);
-    console.log();
-
-    console.log('Fetching execution history...');
-    const runs = await robot.getRuns();
-    console.log(`✓ Found ${runs.length} runs:`);
-    runs.slice(0, 5).forEach((run, i) => {
-      console.log(`  ${i + 1}. ${run.runId} - ${run.status} - ${run.startedAt}`);
-    });
-  } catch (error: any) {
-    console.error('Error:', error.message);
-    if (error.details) {
-      console.error('Details:', error.details);
-    }
-  }
+  const result = await robot.run(); // one run now, to check it works
+  console.log(`${result.listData.length} books; next run ${schedule.nextRunAt}`);
 }
 
-// Run the example
-if (!process.env.MAXUN_API_KEY) {
-  console.error('Please set MAXUN_API_KEY environment variable');
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
-}
-
-completeWorkflowExample();
+});

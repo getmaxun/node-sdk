@@ -25,7 +25,7 @@ export class OpenAIProvider extends BaseLLMProvider {
           role: msg.role,
           content: msg.content
         })),
-        temperature: this.config.temperature || 0.7,
+        temperature: this.config.temperature ?? 0.7,
         max_tokens: this.config.maxTokens || 4096
       });
 

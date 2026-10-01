@@ -1,57 +1,25 @@
 /**
- * Chained Multi-Page Extraction Example
- *
- * This example demonstrates:
- * - Multi-step navigation workflows
- * - Extracting data from multiple pages
- * - Combining different extraction methods
- * - Building complex scraping pipelines
- *
- * Site: Product Hunt (https://www.producthunt.com)
+ * Several steps on one robot: capture text and a list from the same page,
+ * naming each capture.
  */
-
 import 'dotenv/config';
-import { Extract } from 'maxun-sdk';
+import { Maxun } from 'maxun-sdk';
+
+const maxun = new Maxun();
 
 async function main() {
-  const extractor = new Extract({
-    apiKey: process.env.MAXUN_API_KEY!,
-    baseUrl: process.env.MAXUN_BASE_URL!
-  });
+  const robot = await maxun
+    .extract('Premier League Table', 'https://www.bbc.com/sport/football/tables')
+    .captureText({ Title: 'h1' }, 'Heading')
+    .captureList({ selector: 'table tbody tr', maxItems: 20 }, 'Standings')
+    .build();
 
-  try {
-    // Navigate to Product Hunt and extract today's products
-    const robot = await extractor
-      .create('Premier League Score Table')
-      .navigate('https://www.bbc.com/sport/football/tables')
-      .captureText({
-        Title: 'a#tab-PremierLeague'
-      }, 'Text Data')
-      .captureList({
-        selector: 'tr.ssrcss-1urqilq-CellsRow.e13j9mpy2',
-        maxItems: 10
-      }, 'Football Scores');
-
-    console.log(`Robot created: ${robot.id}`);
-
-    const result = await robot.run();
-
-    console.log('\n=== Featured Product ===');
-    console.log(result.data.textData);
-
-    console.log(`\n=== Today's Products (${result.data.listData?.length || 0}) ===`);
-    console.log('First 3 products:');
-    console.log(JSON.stringify(result.data.listData?.slice(0, 3), null, 2));
-
-  } catch (error: any) {
-    console.error('Error:', error.message);
-    process.exit(1);
-  }
+  const result = await robot.run();
+  console.log(result.textData);
+  console.log(JSON.stringify(result.listData.slice(0, 5), null, 2));
 }
 
-if (!process.env.MAXUN_API_KEY) {
-  console.error('Error: MAXUN_API_KEY environment variable is required');
+main().catch((error) => {
+  console.error(error);
   process.exit(1);
-}
-
-main();
+});
