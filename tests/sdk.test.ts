@@ -360,6 +360,16 @@ describe('schedules and webhooks', () => {
     assert.deepEqual(server.last('PUT /robots/r1').json, { schedule: null });
   });
 
+  test('getSchedule reads the robot fresh, with or without a schedule', async () => {
+    server.on('GET /robots/r1', { body: { data: robotRecord() } });
+    const robot = await maxun.robots.get('r1');
+    assert.equal(await robot.getSchedule(), null);
+    assert.deepEqual(await robot.getWebhooks(), []);
+    const saved = { runEvery: 6, runEveryUnit: 'HOURS', timezone: 'UTC', nextRunAt: '2026-01-01T00:00:00Z' };
+    server.on('GET /robots/r1', { body: { data: { ...robotRecord(), schedule: saved } } });
+    assert.deepEqual(await robot.getSchedule(), saved);
+  });
+
   test('webhooks use the server event names, update by URL and can be removed', async () => {
     let stored: any = null;
     server.on('GET /robots/r1', () => ({ body: { data: { ...robotRecord(), webhooks: stored } } }));
@@ -386,9 +396,9 @@ describe('schedules and webhooks', () => {
     await assert.rejects(robot.addWebhook({ url: 'https://hooks.test/c', events: ['done'] }), /Unknown webhook event/);
 
     await robot.removeWebhook('https://hooks.test/b');
-    assert.deepEqual(robot.getWebhooks().map((w) => w.url), ['https://hooks.test/a']);
+    assert.deepEqual((await robot.getWebhooks()).map((w) => w.url), ['https://hooks.test/a']);
     await robot.removeWebhooks();
-    assert.deepEqual(robot.getWebhooks(), []);
+    assert.deepEqual(await robot.getWebhooks(), []);
   });
 
   test('set list limit and rename', async () => {

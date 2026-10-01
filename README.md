@@ -326,7 +326,7 @@ await robot.schedule({ runEvery: 6, runEveryUnit: 'HOURS', timezone: 'Asia/Kolka
 await robot.schedule({ runEvery: 1, runEveryUnit: 'WEEKS', startFrom: 'MONDAY', atTimeStart: '09:00' });
 await robot.schedule({ runEvery: 1, runEveryUnit: 'MONTHS', dayOfMonth: 1, atTimeStart: '06:30' });
 
-robot.getSchedule();      // includes nextRunAt and the generated cronExpression
+await robot.getSchedule();   // includes nextRunAt and cronExpression; null if not scheduled
 await robot.unschedule();
 ```
 
@@ -338,9 +338,9 @@ await robot.unschedule();
 
 ```ts
 const hook = await robot.addWebhook('https://your-server.com/maxun');   // both events
-await robot.addWebhook({ url: 'https://alerts.example.com', events: ['run_failed'], retryAttempts: 5 });
+await robot.addWebhook('https://alerts.example.com', { events: ['run_failed'], retryAttempts: 5 });
 
-robot.getWebhooks();
+await robot.getWebhooks();                                 // [] if none
 await robot.removeWebhook('https://alerts.example.com');   // by URL or id
 await robot.removeWebhooks();                              // all
 ```
@@ -476,7 +476,7 @@ Existing code keeps working. `new Extract(config)`, `new Scrape(config)`, `new C
 - **Config:** `apiKey`, `baseUrl` and `teamId` fall back to `MAXUN_API_KEY`, `MAXUN_BASE_URL` and `MAXUN_TEAM_ID`. Creating a client with no API key anywhere now throws right away instead of failing on the first request.
 - **Types:** `Config.apiKey`, `ScheduleConfig.timezone`, `CrawlConfig.mode` and `RobotData.recording.meta` are now optional, since the SDK fills them in. Code that reads them as always present may need a `!` or a default. `RobotType` includes `doc-extract` and `doc-parse`, and pagination accepts `type: 'none'`.
 - **Return values:**
-  - `robot.getWebhooks()` returns `[]` instead of `null` when there are none.
+  - `robot.getSchedule()` and `robot.getWebhooks()` now return promises and read the robot fresh from the server, so they also see changes made in the app; `await` them. `getWebhooks()` returns `[]` instead of `null` when there are none.
   - `robot.schedule()` returns the saved schedule and `robot.addWebhook()` returns the saved webhook; both used to return nothing.
 - **Runs:** `robot.getRuns()`, `getRun()` and `getLatestRun()` return `Run` objects. They print and serialise as a short summary (`id`, `runId`, `robotId`, `name`, `status`, ISO `startedAt`/`finishedAt`). `run.result` has the output, `run.getData()` the raw record, and `run.serializableOutput`, `binaryOutput` and `robotMetaId` still work. `Run` used to be an interface; the raw shape is now called `RunData`, which `Client.getRuns()` still returns.
 - **Printing:** `console.log(robot)` and `JSON.stringify(robot)` show only `{ id, name, type }`, and the API key no longer appears when printing a robot or client.

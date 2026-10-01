@@ -19,7 +19,7 @@ async function main() {
 
   // Every Monday at 09:00
   await robot.schedule({ runEvery: 1, runEveryUnit: 'WEEKS', timezone: 'Asia/Kolkata', startFrom: 'MONDAY', atTimeStart: '09:00' });
-  console.log(robot.getSchedule());
+  console.log(await robot.getSchedule());
 
   // On the 1st of every month at 06:30
   await robot.schedule({ runEvery: 1, runEveryUnit: 'MONTHS', dayOfMonth: 1, atTimeStart: '06:30' });

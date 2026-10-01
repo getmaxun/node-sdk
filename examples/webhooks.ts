@@ -17,9 +17,9 @@ async function main() {
   console.log('Added', hook.id, hook.events);
 
   // Only failures, with more retries
-  await robot.addWebhook({ url: 'https://alerts.example/maxun-failed', events: ['run_failed'], retryAttempts: 5 });
+  await robot.addWebhook('https://alerts.example/maxun-failed', { events: ['run_failed'], retryAttempts: 5 });
 
-  console.log(robot.getWebhooks().map((w) => w.url));
+  console.log((await robot.getWebhooks()).map((w) => w.url));
 
   await robot.removeWebhook('https://alerts.example/maxun-failed');
   await robot.removeWebhooks(); // remove all

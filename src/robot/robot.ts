@@ -236,7 +236,7 @@ export class Robot {
    */
   async schedule(config: ScheduleConfig): Promise<ScheduleConfig> {
     this.robotData = await this.client.scheduleRobot(this.id, config);
-    return this.getSchedule() || ({} as ScheduleConfig);
+    return this.robotData.schedule || ({} as ScheduleConfig);
   }
 
   /**
@@ -247,9 +247,11 @@ export class Robot {
   }
 
   /**
-   * Get schedule configuration
+   * The robot's schedule (with `nextRunAt` and `cronExpression`), or `null`
+   * if it has none. Read fresh from the server.
    */
-  getSchedule(): ScheduleConfig | null {
+  async getSchedule(): Promise<ScheduleConfig | null> {
+    await this.refresh();
     return this.robotData.schedule || null;
   }
 
@@ -260,18 +262,17 @@ export class Robot {
    * Adding a URL that is already registered updates it instead of duplicating it.
    *
    *     await robot.addWebhook('https://example.com/hook');
-   *     await robot.addWebhook({ url, events: ['run_failed'], retryAttempts: 5 });
+   *     await robot.addWebhook('https://example.com/alerts', { events: ['run_failed'], retryAttempts: 5 });
    */
   async addWebhook(webhook: WebhookConfig | string, options?: Omit<WebhookConfig, 'url'>): Promise<StoredWebhook> {
     const config: WebhookConfig = typeof webhook === 'string' ? { url: webhook, ...(options || {}) } : webhook;
     this.robotData = await this.client.addWebhook(this.id, config);
-    return this.getWebhooks().find((w) => w.url === config.url) as StoredWebhook;
+    return (this.robotData.webhooks || []).find((w) => w.url === config.url) as StoredWebhook;
   }
 
-  /**
-   * Get all webhooks for this robot
-   */
-  getWebhooks(): StoredWebhook[] {
+  /** The robot's webhooks (`[]` if none). Read fresh from the server. */
+  async getWebhooks(): Promise<StoredWebhook[]> {
+    await this.refresh();
     return [...(this.robotData.webhooks || [])];
   }
 
