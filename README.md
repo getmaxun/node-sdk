@@ -34,14 +34,13 @@ Get an API key from your Maxun account, then either pass it in or put it in the 
 
 ```bash
 export MAXUN_API_KEY=your-api-key
-export MAXUN_BASE_URL=http://localhost:8080/api/sdk     # the default (self-hosted)
-# export MAXUN_BASE_URL=https://app.maxun.dev/api/sdk/  # Maxun Cloud
+export MAXUN_BASE_URL=https://app.maxun.dev/api/sdk/   # optional; this is the default (Maxun Cloud)
 export MAXUN_TEAM_ID=your-team-uuid                    # optional; Maxun Cloud teams
 ```
 
 ```ts
 const maxun = new Maxun();                                                        // everything from the environment
-const maxun = new Maxun({ apiKey: '...', baseUrl: 'https://app.maxun.dev/api/sdk/' });   // Maxun Cloud
+const maxun = new Maxun({ apiKey: '...', baseUrl: 'http://localhost:8080/api/sdk/' });  // self-hosted
 ```
 
 The SDK reads real environment variables. To use a `.env` file, load it first, e.g. with `import 'dotenv/config'`.
@@ -473,6 +472,7 @@ Existing code keeps working. `new Extract(config)`, `new Scrape(config)`, `new C
 - **Crawl and search defaults:**
   - Crawl configs now have working defaults. Before, leaving out `limit` or `maxDepth` crawled nothing. Because the defaults are now sent, re-creating a crawl robot from 0.0.x code under the same name can throw `ConflictError` (its stored settings differ); use a new name or delete the old robot.
   - Search now sends `mode: 'scrape'` and `limit: 10` when you leave them out. Leaving out `mode` already scraped each result on the server; leaving out `limit` returned only the first page of results.
+- **Default URL is now Maxun Cloud** (`https://app.maxun.dev/api/sdk/`), the same as the Python SDK. It used to be `http://localhost:8080/api/sdk`; self-hosted users who relied on that default now need to set `baseUrl` or `MAXUN_BASE_URL`.
 - **Config:** `apiKey`, `baseUrl` and `teamId` fall back to `MAXUN_API_KEY`, `MAXUN_BASE_URL` and `MAXUN_TEAM_ID`. Creating a client with no API key anywhere now throws right away instead of failing on the first request.
 - **Types:** `Config.apiKey`, `ScheduleConfig.timezone`, `CrawlConfig.mode` and `RobotData.recording.meta` are now optional, since the SDK fills them in. Code that reads them as always present may need a `!` or a default. `RobotType` includes `doc-extract` and `doc-parse`, and pagination accepts `type: 'none'`.
 - **Return values:**

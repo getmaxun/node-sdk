@@ -22,7 +22,8 @@ export const SCRAPE_FORMATS: Format[] = [
 ];
 export const DOCUMENT_FORMATS: DocumentFormat[] = ['markdown', 'html', 'links', 'summary'];
 export const WEBHOOK_EVENTS: WebhookEvent[] = ['run_completed', 'run_failed'];
-export const DEFAULT_BASE_URL = 'http://localhost:8080/api/sdk';
+/** Maxun Cloud. Self-hosted users set `baseUrl` or MAXUN_BASE_URL. */
+export const DEFAULT_BASE_URL = 'https://app.maxun.dev/api/sdk/';
 
 /**
  * LLM settings. Self-hosted Maxun only: Maxun Cloud manages its own model and
@@ -189,6 +190,7 @@ export interface StoredWebhook {
  */
 export interface Config {
   apiKey?: string;
+  /** Defaults to Maxun Cloud (`https://app.maxun.dev/api/sdk/`). Set it for self-hosted Maxun. */
   baseUrl?: string;
   teamId?: string;
   /** Milliseconds for ordinary API calls (default 30000). Runs have no timeout unless you pass one to `run()`. */

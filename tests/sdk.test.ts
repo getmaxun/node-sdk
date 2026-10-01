@@ -58,6 +58,16 @@ describe('configuration', () => {
     }
   });
 
+  test('defaults to Maxun Cloud', () => {
+    const saved = process.env.MAXUN_BASE_URL;
+    delete process.env.MAXUN_BASE_URL;
+    try {
+      assert.equal(new Maxun({ apiKey: 'k' }).client.baseUrl, 'https://app.maxun.dev/api/sdk/');
+    } finally {
+      if (saved !== undefined) process.env.MAXUN_BASE_URL = saved;
+    }
+  });
+
   test('requires an API key', () => {
     const saved = process.env.MAXUN_API_KEY;
     delete process.env.MAXUN_API_KEY;

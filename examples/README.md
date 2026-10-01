@@ -14,7 +14,7 @@ Build the SDK first (`npm install && npm run build` in the repository root) so `
 | Variable | Description | Default |
 |---|---|---|
 | `MAXUN_API_KEY` | Your Maxun API key (required) | — |
-| `MAXUN_BASE_URL` | SDK API URL | `http://localhost:8080/api/sdk` (self-hosted). Cloud: `https://app.maxun.dev/api/sdk/` |
+| `MAXUN_BASE_URL` | SDK API URL | `https://app.maxun.dev/api/sdk/` (Cloud). Self-hosted: `http://localhost:8080/api/sdk/` |
 | `MAXUN_TEAM_ID` | Team for team-scoped robots (Cloud) | — |
 
 On self-hosted Maxun, the LLM features (prompt extraction, document extraction, `summary`, Smart Queries) also need an LLM: see `llm-extraction.ts`.
