@@ -25,7 +25,7 @@ npm install maxun-sdk
 
 - Node.js 18 or later
 - A Maxun Cloud account or a self-hosted Maxun instance
-- An API key from the [Maxun Dashboard](/api/api)
+- An API key from the [Maxun Dashboard](https://docs.maxun.dev/api/api)
 
 ## Configuration
 
