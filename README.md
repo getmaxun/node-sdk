@@ -60,7 +60,7 @@ const maxun = new Maxun({ apiKey: 'your-api-key', baseUrl: 'http://localhost:808
 
 ## Everything starts from `maxun`
 
-Each call takes the **robot name** first, then **what to work on** (a URL, a search query or a file), then an optional **options object**. It returns a [`Robot`](./sdk-robot) saved on your account.
+Each call takes the **robot name** first, then **what to work on** (a URL, a search query or a file), then an optional **options object**. It returns a [`Robot`](https://docs.maxun.dev/sdk/node-sdk/sdk-robot) saved on your account.
 
 | Call | What the robot does | Read the result from |
 |---|---|---|
